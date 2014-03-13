@@ -3,9 +3,14 @@ package Data;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
-public class Chunk {
+public class Chunk implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static final int ChunkSize = 64000; // 64Kbytes
 
 	public Chunk(String fileID, Integer chunkNo, Integer replicationDeg) {
@@ -36,8 +41,8 @@ public class Chunk {
 	}
 
 	public void write(byte[] data, int len) {
-		file = new java.io.File(fileID+'/'+chunkNo);
-		file.getParentFile().mkdir();
+		file = new java.io.File("chunks/"+fileID+'/'+chunkNo);
+		file.getParentFile().mkdirs();
 		try {
 		
 			FileOutputStream os = new FileOutputStream(file);
