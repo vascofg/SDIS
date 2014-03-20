@@ -1,6 +1,5 @@
 package Data;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -70,15 +69,12 @@ public class File implements Serializable {
 
 			MessageDigest sha = MessageDigest.getInstance("SHA-256");
 			String toHash = name + file.lastModified();
+			sha.update(toHash.getBytes());
 			is.read(data); // data to hash
-			ByteArrayOutputStream hashOutputStream = new ByteArrayOutputStream();
-			//constroi dados para hash (nome + data modificaçao + conteudo 1º chunk)
-			hashOutputStream.write(toHash.getBytes("UTF-8"));
-			hashOutputStream.write(data);
-			byte[] hashData = hashOutputStream.toByteArray();
-			this.id = byteArrayToHexString(sha.digest(hashData));
-			
+			sha.update(data);
 			is.close();
+			
+			this.id = byteArrayToHexString(sha.digest());
 			System.out.println(this.id);
 			is = new FileInputStream(file); // rewind
 
@@ -88,9 +84,12 @@ public class File implements Serializable {
 				addChunk(chunk);
 				chunk.write(data, readBytes);
 			}
-			if (readBytes == Chunk.ChunkSize) // save 0 byte chunk
-			{
-			}
+			//if (readBytes == Chunk.ChunkSize) // save 0 byte chunk
+		//	{
+				chunk = new Chunk(id, i, replicationDeg);
+				addChunk(chunk);
+				chunk.write(data, 0);
+			//}
 			is.close();
 			serialize();
 		} catch (IOException | NoSuchAlgorithmException e) {
@@ -103,7 +102,7 @@ public class File implements Serializable {
 		// TODO: Verificar se temos todos os chunks e obter chunks em falta
 		java.io.File file = new java.io.File(name);
 		try {
-			if (file.createNewFile()) // ficheiro não existe
+			if (file.createNewFile()) // ficheiro nï¿½o existe
 			{
 				java.io.File chunk;
 				FileInputStream is = null;
@@ -112,8 +111,10 @@ public class File implements Serializable {
 				for (int i = 0; i < this.chunks.size(); i++) {
 					chunk = new java.io.File("chunks/"+id+'/'+i);
 					is = new FileInputStream(chunk);
-					is.read(chunkData);
-					os.write(chunkData);
+					int bytesRead = is.read(chunkData);
+					if(bytesRead == -1) //Ãºltimo chunk
+						break;
+					os.write(chunkData, 0, bytesRead);
 				}
 				is.close();
 				os.close();
