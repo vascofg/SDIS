@@ -55,6 +55,24 @@ public class File implements Serializable {
 		return replicationDeg;
 	}
 
+	public String getFileID() {
+		try {
+			java.io.File file = new java.io.File(name);
+			FileInputStream is = new FileInputStream(file);
+			byte[] data = new byte[Chunk.ChunkSize];
+			MessageDigest sha = MessageDigest.getInstance("SHA-256");
+			String toHash = name + file.lastModified();
+			sha.update(toHash.getBytes());
+			is.read(data); // data to hash
+			sha.update(data);
+			is.close();
+			return byteArrayToHexString(sha.digest());
+		} catch (NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public void chunker() {
 		java.io.File file = new java.io.File(name);
 		int i;
@@ -67,14 +85,7 @@ public class File implements Serializable {
 			byte[] data = new byte[Chunk.ChunkSize];
 			int readBytes = 0;
 
-			MessageDigest sha = MessageDigest.getInstance("SHA-256");
-			String toHash = name + file.lastModified();
-			sha.update(toHash.getBytes());
-			is.read(data); // data to hash
-			sha.update(data);
-			is.close();
-			
-			this.id = byteArrayToHexString(sha.digest());
+			this.id = getFileID();
 			System.out.println(this.id);
 			is = new FileInputStream(file); // rewind
 
@@ -84,15 +95,15 @@ public class File implements Serializable {
 				addChunk(chunk);
 				chunk.write(data, readBytes);
 			}
-			//if (readBytes == Chunk.ChunkSize) // save 0 byte chunk
-		//	{
+			if (readBytes == Chunk.ChunkSize) // save 0 byte chunk
+			{
 				chunk = new Chunk(id, i, replicationDeg);
 				addChunk(chunk);
 				chunk.write(data, 0);
-			//}
+			}
 			is.close();
 			serialize();
-		} catch (IOException | NoSuchAlgorithmException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -109,10 +120,10 @@ public class File implements Serializable {
 				FileOutputStream os = new FileOutputStream(file);
 				byte[] chunkData = new byte[Chunk.ChunkSize];
 				for (int i = 0; i < this.chunks.size(); i++) {
-					chunk = new java.io.File("chunks/"+id+'/'+i);
+					chunk = new java.io.File("chunks/" + id + '/' + i);
 					is = new FileInputStream(chunk);
 					int bytesRead = is.read(chunkData);
-					if(bytesRead == -1) //último chunk
+					if (bytesRead == -1) // último chunk
 						break;
 					os.write(chunkData, 0, bytesRead);
 				}
@@ -125,10 +136,10 @@ public class File implements Serializable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void serialize() {
 		try {
-			java.io.File file = new java.io.File("files/"+id); //file id
+			java.io.File file = new java.io.File("files/" + id); // file id
 			file.getParentFile().mkdir();
 			file.createNewFile();
 			FileOutputStream os = new FileOutputStream(file);
@@ -140,7 +151,7 @@ public class File implements Serializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }
