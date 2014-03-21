@@ -2,14 +2,22 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 import Data.File;
+import Message.Multicast;
+
 
 public final class Backup {
 
+	private static final String portStr = "50001";
+	public static final String IP = "239.254.254.254";
+	public static final int port = 50001;
 	public static List<File> files = new ArrayList<File>();
 
 	public static void loadFiles() throws NullPointerException {
@@ -75,6 +83,22 @@ public final class Backup {
 					throw new FileNotFoundException();
 				else
 					files.get(fileNo).dechunker();
+				break;
+			case "send":
+				 new Multicast(IP,portStr).start();
+				break;
+			case "receive":
+				
+				MulticastSocket multicast_socket = new MulticastSocket(port);
+				InetAddress group = InetAddress.getByName(IP);
+				multicast_socket.joinGroup(group);
+				byte[] buf = new byte[256];
+				DatagramPacket serverInfo = new DatagramPacket(buf, buf.length);
+				
+				//IP PORT
+				multicast_socket.receive(serverInfo);
+				String msg = new String(serverInfo.getData(), 0, serverInfo.getLength());
+				System.out.println("received   " +msg);
 				break;
 			case "exit":
 				sc.close();
