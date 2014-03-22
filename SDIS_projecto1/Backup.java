@@ -94,6 +94,9 @@ public final class Backup {
 				else
 					files.get(fileNo).dechunker();
 				break;
+			case "send":
+				MC.send("LODOSO");
+				break;
 			case "exit":
 				sc.close();
 				return;

@@ -23,7 +23,7 @@ public class MulticastControl extends Thread {
 			multicast_socket = new MulticastSocket(this.multicast_port);
 			multicast_socket.setTimeToLive(1);
 			multicast_socket.joinGroup(this.group);
-			multicast_socket.setLoopbackMode(true); //disable loopback
+			multicast_socket.setLoopbackMode(false); //disable loopback
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -49,8 +49,8 @@ public class MulticastControl extends Thread {
 		}
 	}
 
-	public void send(Message message) {
-		String msg = message.toString();
+	public void send(String msg) {
+		//String msg = message.toString();
 		DatagramPacket controlMessagePacket = new DatagramPacket(
 				msg.getBytes(), msg.length(), this.group, this.multicast_port);
 		try {
