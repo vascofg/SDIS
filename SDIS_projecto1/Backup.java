@@ -2,22 +2,30 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import Data.Chunk;
 import Data.File;
-import Message.Multicast;
-
+import Message.Header;
+import Message.Message;
+import Channel.MulticastControl;
+import Channel.MulticastDataBackup;
+import Channel.MulticastDataRecover;
 
 public final class Backup {
 
-	private static final String portStr = "50001";
-	public static final String IP = "239.254.254.254";
-	public static final int port = 50001;
+	private static final String MCport = "50001";
+	public static final String MCgroup = "239.254.254.252";
+	private static final String MDBport = "50001";
+	public static final String MDBgroup = "239.254.254.253";
+	private static final String MDRport = "50001";
+	public static final String MDRgroup = "239.254.254.254";
+	public static final String version = "1.0";
+	public static MulticastControl MC = new MulticastControl(MCgroup, MCport);
+	public static MulticastDataBackup MDB = new MulticastDataBackup(MDBgroup, MDBport);
+	public static MulticastDataRecover MDR = new MulticastDataRecover(MDRgroup, MDRport);
 	public static List<File> files = new ArrayList<File>();
 
 	public static void loadFiles() throws NullPointerException {
@@ -47,6 +55,8 @@ public final class Backup {
 		String cmd;
 		Scanner sc = new Scanner(System.in);
 		String data[];
+		
+		MC.start();
 
 		try {
 			loadFiles();
@@ -84,26 +94,17 @@ public final class Backup {
 				else
 					files.get(fileNo).dechunker();
 				break;
-			case "send":
-				 new Multicast(IP,portStr).start();
-				break;
-			case "receive":
-				
-				MulticastSocket multicast_socket = new MulticastSocket(port);
-				InetAddress group = InetAddress.getByName(IP);
-				multicast_socket.joinGroup(group);
-				byte[] buf = new byte[256];
-				DatagramPacket serverInfo = new DatagramPacket(buf, buf.length);
-				
-				//IP PORT
-				multicast_socket.receive(serverInfo);
-				String msg = new String(serverInfo.getData(), 0, serverInfo.getLength());
-				System.out.println("received   " +msg);
-				break;
 			case "exit":
 				sc.close();
 				return;
 			}
 		}
+	}
+	
+	public void putChunk(Chunk chunk)
+	{
+		Header header = new Header("PUTCHUNK", version, chunk.getFileID(), chunk.getChunkNo(), chunk.getReplicationDeg());
+		Message message = new Message(header, chunk);
+		MDB.send(message);
 	}
 }

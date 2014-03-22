@@ -54,4 +54,9 @@ public class Header {
 	public void setRepDeg(Integer repDeg) {
 		RepDeg = repDeg;
 	}
+	
+	@Override
+	public String toString() {
+		return messageType + ' ' + version + ' ' + fileId + ' ' + ChunkNo + ' ' + RepDeg + '\r' + '\n';
+	}
 }

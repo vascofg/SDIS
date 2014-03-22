@@ -7,14 +7,14 @@ import java.net.MulticastSocket;
 
 import Message.Message;
 
-public class MulticastDataBackup extends Thread {
+public class MulticastDataRecover extends Thread {
 	public int port;
 	public int multicast_port;
 	public InetAddress group;
 	public InetAddress address;
 	public MulticastSocket multicast_socket;
 
-	public MulticastDataBackup(String group, String multicast_port) {
+	public MulticastDataRecover(String group, String multicast_port) {
 		try {
 			this.multicast_port = Integer.parseInt(multicast_port);
 			this.group = InetAddress.getByName(group);

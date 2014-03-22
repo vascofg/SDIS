@@ -1,26 +1,14 @@
 package Message;
 
-import Data.File;
+import Data.Chunk;
 
 public class Message {
 
 	Header header=null;
-	File file=null;
+	Chunk chunk=null;
 	
-	public Message(Header header, File file) {
+	public Message(Header header, Chunk chunk) {
 		this.header=header;
-		this.file=file;
-	}
-	
-	public void send(/*ip port or somth*/){
-		//TODO corpo desta merda
-	}
-	
-	public void receive(){
-		//TODO mesma merda
-	}
-	
-	public void construct(String type){
-		
+		this.chunk=chunk;
 	}
 }
