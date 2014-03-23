@@ -95,7 +95,8 @@ public final class Backup {
 					files.get(fileNo).dechunker();
 				break;
 			case "send":
-				MC.send("LODOSO");
+				Message msg = new Message(new Header("PUTCHUNK", version, "Teste", 0, 1), null);
+				MC.send(msg);
 				break;
 			case "exit":
 				sc.close();

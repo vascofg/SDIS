@@ -1,6 +1,7 @@
 package Channel;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -23,7 +24,7 @@ public class MulticastControl extends Thread {
 			multicast_socket = new MulticastSocket(this.multicast_port);
 			multicast_socket.setTimeToLive(1);
 			multicast_socket.joinGroup(this.group);
-			multicast_socket.setLoopbackMode(false); //disable loopback
+			multicast_socket.setLoopbackMode(true); //disable loopback
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -36,28 +37,29 @@ public class MulticastControl extends Thread {
 		DatagramPacket controlMessagePacket = new DatagramPacket(buf,
 				buf.length);
 
-		String msg;
+		Message msg;
+		
 		while (true) {
 			try {
 				multicast_socket.receive(controlMessagePacket);
-			} catch (IOException e) {
+				msg  = new Message(controlMessagePacket.getData(), 
+						controlMessagePacket.getLength());
+				
+				System.out.println("received   " + msg.getHeader().getMessageType());
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			msg = new String(controlMessagePacket.getData(), 0,
-					controlMessagePacket.getLength());
-			System.out.println("received   " + msg);
 		}
 	}
 
-	public void send(String msg) {
-		//String msg = message.toString();
+	public void send(Message message) throws UnsupportedEncodingException{
+		byte[] messageBytes = message.getBytes();
 		DatagramPacket controlMessagePacket = new DatagramPacket(
-				msg.getBytes(), msg.length(), this.group, this.multicast_port);
+				messageBytes, messageBytes.length, this.group, this.multicast_port);
 		try {
 			multicast_socket.send(controlMessagePacket);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("sent: " + msg);
 	}
 }
