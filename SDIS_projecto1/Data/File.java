@@ -11,6 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class File implements Serializable {
+	
+	//for tests only
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	/**
 	 * 
 	 */
@@ -91,13 +97,13 @@ public class File implements Serializable {
 
 			for (i = 0; i < numChunks; i++) {
 				readBytes = is.read(data);
-				chunk = new Chunk(id, i, replicationDeg);
+				chunk = new Chunk(id, i, replicationDeg, readBytes);
 				addChunk(chunk);
 				chunk.write(data, readBytes);
 			}
 			if (readBytes == Chunk.ChunkSize) // save 0 byte chunk
 			{
-				chunk = new Chunk(id, i, replicationDeg);
+				chunk = new Chunk(id, i, replicationDeg, 0);
 				addChunk(chunk);
 				chunk.write(data, 0);
 			}

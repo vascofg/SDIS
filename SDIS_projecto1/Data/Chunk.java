@@ -15,11 +15,12 @@ public class Chunk implements Serializable{
 	
 	//TODO: SERIALIZE CHUNK
 
-	public Chunk(String fileID, Integer chunkNo, Integer replicationDeg) {
+	public Chunk(String fileID, Integer chunkNo, Integer replicationDeg, int size) {
 		super();
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
 		this.replicationDeg = replicationDeg;
+		this.size = size;
 	}
 
 	String fileID;

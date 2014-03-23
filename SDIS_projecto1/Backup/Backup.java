@@ -1,18 +1,19 @@
+package Backup;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 import Data.Chunk;
 import Data.File;
 import Message.Header;
 import Message.Message;
-import Channel.MulticastControl;
-import Channel.MulticastDataBackup;
-import Channel.MulticastDataRecover;
+import Channel.Multicast;
 
 public final class Backup {
 
@@ -23,10 +24,17 @@ public final class Backup {
 	private static final String MDRport = "50001";
 	public static final String MDRgroup = "239.254.254.254";
 	public static final String version = "1.0";
-	public static MulticastControl MC = new MulticastControl(MCgroup, MCport);
-	public static MulticastDataBackup MDB = new MulticastDataBackup(MDBgroup, MDBport);
-	public static MulticastDataRecover MDR = new MulticastDataRecover(MDRgroup, MDRport);
-	public static List<File> files = new ArrayList<File>();
+	public static Multicast MC = new Multicast(MCgroup, MCport);
+	public static Multicast MDB = new Multicast(MDBgroup, MDBport);
+	public static Multicast MDR = new Multicast(MDRgroup, MDRport);
+
+	public static List<File> files = new ArrayList<File>(); // ficheiros que
+															// pertencem a este
+															// peer
+
+	public static List<Chunk> chunks = new ArrayList<Chunk>(); // chunks de
+																// ficheiros de
+																// outro peer
 
 	public static void loadFiles() throws NullPointerException {
 		java.io.File folder = new java.io.File("files/");
@@ -55,8 +63,10 @@ public final class Backup {
 		String cmd;
 		Scanner sc = new Scanner(System.in);
 		String data[];
-		
+
 		MC.start();
+		MDB.start();
+		MDR.start();
 
 		try {
 			loadFiles();
@@ -78,6 +88,7 @@ public final class Backup {
 					File file = new File(data[1], Integer.parseInt(data[2]));
 					if (!fileAlreadyExists(file.getFileID())) {
 						file.chunker();
+						sendBackup(file);
 						files.add(file);
 					}
 				}
@@ -95,8 +106,17 @@ public final class Backup {
 					files.get(fileNo).dechunker();
 				break;
 			case "send":
-				Message msg = new Message(new Header("PUTCHUNK", version, "Teste", 0, 1), null);
+				Message msg = new Message(new Header("PUTCHUNK", version,
+						"Teste", 0, 1), null);
 				MC.send(msg);
+				break;
+			case "teste":
+				File file = new File("bolha.png", 1);
+				for (i = 0; i < chunks.size(); i++) {
+					file.addChunk(chunks.get(i));
+				}
+				file.setId(chunks.get(0).getFileID());
+				file.dechunker();
 				break;
 			case "exit":
 				sc.close();
@@ -104,11 +124,34 @@ public final class Backup {
 			}
 		}
 	}
-	
-	public void putChunk(Chunk chunk)
-	{
-		Header header = new Header("PUTCHUNK", version, chunk.getFileID(), chunk.getChunkNo(), chunk.getReplicationDeg());
+
+	public static void sendBackup(File file) {
+		for (int i = 0; i < file.getChunks().size(); i++) {
+			putChunk(file.getChunks().get(i));
+			// TODO: esperar por stored e cenas
+		}
+	}
+
+	public static void putChunk(Chunk chunk) {
+		Header header = new Header("PUTCHUNK", version, chunk.getFileID(),
+				chunk.getChunkNo(), chunk.getReplicationDeg());
 		Message message = new Message(header, chunk);
 		MDB.send(message);
+	}
+
+	public static void stored(Chunk chunk, byte[] chunkData) {
+		// TODO: enviar stored
+		chunks.add(chunk);
+		chunk.write(chunkData, chunkData.length);
+		Header header = new Header("STORED", version, chunk.getFileID(),
+				chunk.getChunkNo(), null);
+		Message message = new Message(header, null);
+		try {
+			Thread.sleep(Math.round(Math.random() * 400));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		MC.send(message);
 	}
 }

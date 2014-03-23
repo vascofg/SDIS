@@ -17,17 +17,24 @@ public class Header {
 		this.ChunkNo = chunkNo;
 		this.RepDeg = repDeg;
 	}
-	
-	public Header(byte[] headerBytes)
-	{
+
+	public Header(byte[] headerBytes) {
 		try {
 			String header = new String(headerBytes, "UTF-8");
 			String data[] = header.split(" ");
 			this.messageType = data[0];
-			this.version = data[1];
-			this.fileId = data[2];
-			this.ChunkNo = Integer.parseInt(data[3]);
-			this.RepDeg = Integer.parseInt(data[4]);
+			switch (messageType) {
+			case "PUTCHUNK":
+				this.RepDeg = Integer.parseInt(data[4]);
+			case "STORED":
+			case "GETCHUNK":
+			case "CHUNK":
+			case "REMOVED":
+				this.version = data[1];
+				this.ChunkNo = Integer.parseInt(data[3]);
+			case "DELETE":
+				this.fileId = data[2];
+			}
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -76,8 +83,21 @@ public class Header {
 
 	@Override
 	public String toString() {
-		return messageType + ' ' + version + ' ' + fileId + ' ' + ChunkNo + ' '
-				+ RepDeg + '\r' + '\n' + '\r' + '\n';
+		switch (messageType) {
+		case "PUTCHUNK":
+			return messageType + ' ' + version + ' ' + fileId + ' ' + ChunkNo
+					+ ' ' + RepDeg + '\r' + '\n' + '\r' + '\n';
+		case "STORED":
+		case "GETCHUNK":
+		case "CHUNK":
+		case "REMOVED":
+			return messageType + ' ' + version + ' ' + fileId + ' ' + ChunkNo
+					+ '\r' + '\n' + '\r' + '\n';
+		case "DELETE":
+			return messageType + ' ' + fileId + '\r' + '\n' + '\r' + '\n';
+		default:
+			return null;
+		}
 	}
 
 	public byte[] getBytes() {

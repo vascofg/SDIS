@@ -20,12 +20,14 @@ public class Message {
 	Chunk chunk;
 	byte[] chunkData;
 
-	public Message(Header header, Chunk chunk) {
+	public Message(Header header, Chunk chunk) { //quando envia
 		this.header = header;
 		this.chunk = chunk;
+		if(chunk!=null)
+			this.chunkData = chunk.read();
 	}
 	
-	public Message(byte[] messageBytes, int length) throws Exception {
+	public Message(byte[] messageBytes, int length) throws Exception { //quando recebe
 		int i;
 		String string = new String(messageBytes, 0, length, "UTF-8");
 		for(i=0;i<=length-4;i++)
@@ -42,7 +44,7 @@ public class Message {
 					{
 						this.chunkData = new byte[length-i];
 						System.arraycopy(messageBytes, i, this.chunkData, 0, length-i);
-						this.chunk = new Chunk(header.fileId, header.ChunkNo, header.RepDeg);
+						this.chunk = new Chunk(header.fileId, header.ChunkNo, header.RepDeg, length-i);
 					}
 					return;
 				}
