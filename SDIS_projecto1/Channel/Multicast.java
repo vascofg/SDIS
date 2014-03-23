@@ -25,7 +25,7 @@ public class Multicast extends Thread {
 			multicast_socket = new MulticastSocket(this.multicast_port);
 			multicast_socket.setTimeToLive(1);
 			multicast_socket.joinGroup(this.group);
-			multicast_socket.setLoopbackMode(false); // disable loopback
+			multicast_socket.setLoopbackMode(true); // disable loopback
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -73,6 +73,8 @@ public class Multicast extends Thread {
 
 		try {
 			multicast_socket.send(controlMessagePacket);
+			System.out.println("sent   "
+					+ message.getHeader().getMessageType());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
