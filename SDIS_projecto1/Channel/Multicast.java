@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+import Message.Header;
 import Message.Message;
 import Backup.Backup;
 import Data.Chunk;
@@ -32,7 +33,7 @@ public class Multicast extends Thread {
 	}
 
 	@Override
-	public void run() {
+	public void run() { //receive
 		super.run();
 		byte[] buf = new byte[Chunk.ChunkSize + 256];
 		DatagramPacket controlMessagePacket = new DatagramPacket(buf,
@@ -45,19 +46,23 @@ public class Multicast extends Thread {
 				multicast_socket.receive(controlMessagePacket);
 				msg = new Message(controlMessagePacket.getData(),
 						controlMessagePacket.getLength());
+				
+				Header header = msg.getHeader();
+				Chunk chunk = msg.getChunk();
 
-				String messageType = msg.getHeader().getMessageType();
+				String messageType = header.getMessageType();
 				
 				System.out.println("received   "
-						+ messageType);
+						+ header.toString());
 				
 				switch(messageType)
 				{
 				case "PUTCHUNK":
-					Backup.stored(msg.getChunk(), msg.getChunkData());
+					Backup.stored(chunk, msg.getChunkData());
 					break;
 				case "STORED":
-					System.out.println("GUARDOU NUM!");
+					//incrementa rep deg do chunk armazenado no peer remoto
+					Backup.getFileChunk(header.getFileId(), header.getChunkNo()).incrementCurrentReplicationDeg();
 					break;
 				}
 			} catch (Exception e) {
@@ -74,7 +79,7 @@ public class Multicast extends Thread {
 		try {
 			multicast_socket.send(controlMessagePacket);
 			System.out.println("sent   "
-					+ message.getHeader().getMessageType());
+					+ message.getHeader().toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

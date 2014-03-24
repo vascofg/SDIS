@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 
 import Data.Chunk;
@@ -52,11 +51,29 @@ public final class Backup {
 		}
 	}
 
-	public static Boolean fileAlreadyExists(String fileID) {
-		for (int i = 0; i < files.size(); i++)
-			if (files.get(i).getId().equals(fileID))
-				return true;
-		return false;
+	public static File getFileByID(String fileID) {
+		for (int i = 0; i < files.size(); i++) {
+			File file = files.get(i);
+			if (file.getFileID().equals(fileID))
+				return file;
+		}
+		return null;
+	}
+
+	public static Chunk getChunkByID(List<Chunk> chunks, String fileID,
+			int chunkNo) {
+		for (int i = 0; i < chunks.size(); i++) {
+			Chunk chunk = chunks.get(i);
+			if (chunk.getChunkNo() == chunkNo
+					&& chunk.getFileID().equals(fileID))
+				return chunk;
+		}
+		return null;
+	}
+
+	public static Chunk getFileChunk(String fileID, int chunkNo) {
+		File file = getFileByID(fileID);
+		return getChunkByID(file.getChunks(), file.getFileID(), chunkNo);
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -86,10 +103,10 @@ public final class Backup {
 					System.out.println("usage: backup <filename> <repdeg>");
 				else {
 					File file = new File(data[1], Integer.parseInt(data[2]));
-					if (!fileAlreadyExists(file.getFileID())) {
+					if (getFileByID(file.getFileID()) == null) {
 						file.chunker();
-						sendBackup(file);
 						files.add(file);
+						sendBackup(file);
 					}
 				}
 				break;
@@ -133,25 +150,48 @@ public final class Backup {
 	}
 
 	public static void putChunk(Chunk chunk) {
-		Header header = new Header("PUTCHUNK", version, chunk.getFileID(),
-				chunk.getChunkNo(), chunk.getReplicationDeg());
-		Message message = new Message(header, chunk);
-		MDB.send(message);
-	}
-
-	public static void stored(Chunk chunk, byte[] chunkData) {
-		// TODO: enviar stored
-		chunks.add(chunk);
-		chunk.write(chunkData, chunkData.length);
-		Header header = new Header("STORED", version, chunk.getFileID(),
-				chunk.getChunkNo(), null);
-		Message message = new Message(header, null);
 		try {
-			Thread.sleep(Math.round(Math.random() * 400));
+			int waitTime = 500;
+			Header header = new Header("PUTCHUNK", version, chunk.getFileID(),
+					chunk.getChunkNo(), chunk.getReplicationDeg());
+			Message message = new Message(header, chunk);
+			for (int i = 0; i < 5; i++) // máx 5 retries
+			{
+				MDB.send(message);
+				System.out.println("Waiting for stored messages...");
+				Thread.sleep(waitTime);
+				waitTime *= 2; // duplica tempo de espera
+				if (chunk.getCurrentReplicationDeg() >= chunk
+						.getReplicationDeg())
+					return; // done
+			}
+			// para de tentar
+			System.out.println("Replication degree not met. Giving up...");
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		MC.send(message);
+	}
+
+	public static void stored(Chunk chunk, byte[] chunkData) { // recebido
+																// putchunk
+		// TODO: verificar replication degree
+		if (getChunkByID(chunks, chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
+																					// não
+																					// existe
+		{
+			chunks.add(chunk);
+			chunk.write(chunkData, chunkData.length);
+			Header header = new Header("STORED", version, chunk.getFileID(),
+					chunk.getChunkNo(), null);
+			Message message = new Message(header, null);
+			try {
+				Thread.sleep(Math.round(Math.random() * 400));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			MC.send(message);
+		}
 	}
 }

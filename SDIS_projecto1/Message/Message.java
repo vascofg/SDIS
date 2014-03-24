@@ -29,7 +29,6 @@ public class Message {
 	
 	public Message(byte[] messageBytes, int length) throws Exception { //quando recebe
 		int i;
-		String string = new String(messageBytes, 0, length, "UTF-8");
 		for(i=0;i<=length-4;i++)
 		{
 			if(messageBytes[i]=='\r' && messageBytes[i+1]=='\n')

@@ -21,10 +21,24 @@ public class Chunk implements Serializable{
 		this.chunkNo = chunkNo;
 		this.replicationDeg = replicationDeg;
 		this.size = size;
+		this.currentReplicationDeg = 0;
 	}
 
 	String fileID;
-	Integer chunkNo, replicationDeg, size;
+	Integer chunkNo, replicationDeg, size, currentReplicationDeg;
+	
+	public Integer getCurrentReplicationDeg() {
+		return currentReplicationDeg;
+	}
+
+	public void setCurrentReplicationDeg(Integer currentReplicationDeg) {
+		this.currentReplicationDeg = currentReplicationDeg;
+	}
+	
+	public void incrementCurrentReplicationDeg() {
+		this.currentReplicationDeg++;
+	}
+
 	java.io.File file;
 
 	public String getFileID() {
