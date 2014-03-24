@@ -62,7 +62,7 @@ public class Multicast extends Thread {
 					break;
 				case "STORED":
 					//incrementa rep deg do chunk armazenado no peer remoto
-					Backup.getFileChunk(header.getFileId(), header.getChunkNo()).incrementCurrentReplicationDeg();
+					Backup.getChunkByID(header.getFileId(), header.getChunkNo()).incrementCurrentReplicationDeg();
 					break;
 				}
 			} catch (Exception e) {

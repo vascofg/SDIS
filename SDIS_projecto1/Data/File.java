@@ -93,6 +93,7 @@ public class File implements Serializable {
 
 			this.id = getFileID();
 			System.out.println(this.id);
+			is.close();
 			is = new FileInputStream(file); // rewind
 
 			for (i = 0; i < numChunks; i++) {

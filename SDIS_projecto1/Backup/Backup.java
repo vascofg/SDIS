@@ -31,9 +31,8 @@ public final class Backup {
 															// pertencem a este
 															// peer
 
-	public static List<Chunk> chunks = new ArrayList<Chunk>(); // chunks de
-																// ficheiros de
-																// outro peer
+	public static List<Chunk> chunks = new ArrayList<Chunk>(); // todos os
+																// chunks
 
 	public static void loadFiles() throws NullPointerException {
 		java.io.File folder = new java.io.File("files/");
@@ -60,8 +59,7 @@ public final class Backup {
 		return null;
 	}
 
-	public static Chunk getChunkByID(List<Chunk> chunks, String fileID,
-			int chunkNo) {
+	public static Chunk getChunkByID(String fileID, int chunkNo) {
 		for (int i = 0; i < chunks.size(); i++) {
 			Chunk chunk = chunks.get(i);
 			if (chunk.getChunkNo() == chunkNo
@@ -69,11 +67,6 @@ public final class Backup {
 				return chunk;
 		}
 		return null;
-	}
-
-	public static Chunk getFileChunk(String fileID, int chunkNo) {
-		File file = getFileByID(fileID);
-		return getChunkByID(file.getChunks(), file.getFileID(), chunkNo);
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -106,6 +99,8 @@ public final class Backup {
 					if (getFileByID(file.getFileID()) == null) {
 						file.chunker();
 						files.add(file);
+						for (int i = 0; i < file.getChunks().size(); i++)
+							chunks.add(file.getChunks().get(i));
 						sendBackup(file);
 					}
 				}
@@ -176,9 +171,9 @@ public final class Backup {
 	public static void stored(Chunk chunk, byte[] chunkData) { // recebido
 																// putchunk
 		// TODO: verificar replication degree
-		if (getChunkByID(chunks, chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
-																					// não
-																					// existe
+		if (getChunkByID(chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
+																			// não
+																			// existe
 		{
 			chunks.add(chunk);
 			chunk.write(chunkData, chunkData.length);
