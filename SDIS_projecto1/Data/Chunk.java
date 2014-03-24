@@ -3,19 +3,19 @@ package Data;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-public class Chunk implements Serializable{
+public class Chunk implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	public static final int ChunkSize = 64000; // 64Kbytes
-	
-	//TODO: SERIALIZE CHUNK
 
-	public Chunk(String fileID, Integer chunkNo, Integer replicationDeg, int size) {
+	public Chunk(String fileID, Integer chunkNo, Integer replicationDeg,
+			int size) {
 		super();
 		this.fileID = fileID;
 		this.chunkNo = chunkNo;
@@ -26,7 +26,7 @@ public class Chunk implements Serializable{
 
 	String fileID;
 	Integer chunkNo, replicationDeg, size, currentReplicationDeg;
-	
+
 	public Integer getCurrentReplicationDeg() {
 		return currentReplicationDeg;
 	}
@@ -34,7 +34,7 @@ public class Chunk implements Serializable{
 	public void setCurrentReplicationDeg(Integer currentReplicationDeg) {
 		this.currentReplicationDeg = currentReplicationDeg;
 	}
-	
+
 	public void incrementCurrentReplicationDeg() {
 		this.currentReplicationDeg++;
 	}
@@ -58,10 +58,10 @@ public class Chunk implements Serializable{
 	}
 
 	public void write(byte[] data, int len) {
-		file = new java.io.File("chunks/"+fileID+'/'+chunkNo);
+		file = new java.io.File("chunks/" + fileID + '/' + chunkNo);
 		file.getParentFile().mkdirs();
 		try {
-		
+
 			FileOutputStream os = new FileOutputStream(file);
 			os.write(data, 0, len);
 			os.close();
@@ -69,7 +69,7 @@ public class Chunk implements Serializable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		this.serialize(); //serializa chunk
 	}
 
 	public byte[] read() {
@@ -84,5 +84,23 @@ public class Chunk implements Serializable{
 			e.printStackTrace();
 		}
 		return data;
+	}
+
+	public void serialize() {
+		try {
+			java.io.File file = new java.io.File("chunks/" + fileID + '/' + chunkNo
+					+ ".ser"); // file id
+			file.getParentFile().mkdir();
+			file.createNewFile();
+			FileOutputStream os = new FileOutputStream(file);
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			oos.writeObject(this);
+			oos.close();
+			os.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }

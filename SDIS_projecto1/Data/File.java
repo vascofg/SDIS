@@ -109,7 +109,7 @@ public class File implements Serializable {
 				chunk.write(data, 0);
 			}
 			is.close();
-			serialize();
+			serialize(); //serializa ficheiro
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

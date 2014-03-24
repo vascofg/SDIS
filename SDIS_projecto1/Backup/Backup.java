@@ -2,6 +2,7 @@ package Backup;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -50,6 +51,52 @@ public final class Backup {
 		}
 	}
 
+	public static void loadChunks() throws NullPointerException {
+		java.io.File folder = new java.io.File("chunks/");
+		FileInputStream fis;
+		ObjectInputStream ois;
+		for (final java.io.File fileEntry : folder.listFiles()) { // pastas para
+																	// cada
+																	// ficheiro
+			try {
+				// filtro para apenas ler ficheiros de serialize
+				FilenameFilter filter = new FilenameFilter() {
+
+					@Override
+					public boolean accept(java.io.File dir, String name) {
+						if (name.contains(".ser"))
+							return true;
+						return false;
+					}
+				};
+				if (fileEntry.isDirectory()) {
+					for (final java.io.File fileEntry2 : fileEntry
+							.listFiles(filter)) { // chunks
+						// de
+						// cada
+						// ficheiro
+						fis = new FileInputStream(fileEntry2);
+						ois = new ObjectInputStream(fis);
+						chunks.add((Chunk) ois.readObject());
+					}
+				}
+			} catch (IOException | ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void saveFiles() {
+		for (int i = 0; i < files.size(); i++)
+			files.get(i).serialize();
+	}
+
+	public static void saveChunks() {
+		for (int i = 0; i < chunks.size(); i++)
+			chunks.get(i).serialize();
+	}
+
 	public static File getFileByID(String fileID) {
 		for (int i = 0; i < files.size(); i++) {
 			File file = files.get(i);
@@ -82,6 +129,12 @@ public final class Backup {
 			loadFiles();
 		} catch (NullPointerException n) {
 			System.out.println("No files to load");
+		}
+
+		try {
+			loadChunks();
+		} catch (NullPointerException n) {
+			System.out.println("No chunks to load");
 		}
 
 		while (true) {
@@ -132,16 +185,19 @@ public final class Backup {
 				break;
 			case "exit":
 				sc.close();
+				MC.interrupt();
+				MDB.interrupt();
+				MDR.interrupt();
+				saveFiles();
+				saveChunks();
 				return;
 			}
 		}
 	}
 
 	public static void sendBackup(File file) {
-		for (int i = 0; i < file.getChunks().size(); i++) {
+		for (int i = 0; i < file.getChunks().size(); i++)
 			putChunk(file.getChunks().get(i));
-			// TODO: esperar por stored e cenas
-		}
 	}
 
 	public static void putChunk(Chunk chunk) {
@@ -170,7 +226,7 @@ public final class Backup {
 
 	public static void stored(Chunk chunk, byte[] chunkData) { // recebido
 																// putchunk
-		// TODO: verificar replication degree
+
 		if (getChunkByID(chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
 																			// não
 																			// existe
@@ -187,6 +243,7 @@ public final class Backup {
 				e.printStackTrace();
 			}
 			MC.send(message);
+			chunk.incrementCurrentReplicationDeg();
 		}
 	}
 }
