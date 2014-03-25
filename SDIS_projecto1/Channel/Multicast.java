@@ -16,12 +16,19 @@ public class Multicast extends Thread {
 	public InetAddress group;
 	public InetAddress address;
 	public MulticastSocket multicast_socket;
+	public String ignoreFileID; // ignores this file ID
+	public Integer ignoreChunkNo;
+	public Boolean ignoreChunk;
 
 	public Multicast(String group, String multicast_port) {
 		try {
 			this.multicast_port = Integer.parseInt(multicast_port);
 			this.group = InetAddress.getByName(group);
 			this.address = InetAddress.getLocalHost();
+
+			this.ignoreFileID = null;
+			this.ignoreChunkNo = null;
+			this.ignoreChunk = null;
 
 			multicast_socket = new MulticastSocket(this.multicast_port);
 			multicast_socket.setTimeToLive(1);
@@ -33,7 +40,7 @@ public class Multicast extends Thread {
 	}
 
 	@Override
-	public void run() { //receive
+	public void run() { // receive
 		super.run();
 		byte[] buf = new byte[Chunk.ChunkSize + 256];
 		DatagramPacket controlMessagePacket = new DatagramPacket(buf,
@@ -46,26 +53,42 @@ public class Multicast extends Thread {
 				multicast_socket.receive(controlMessagePacket);
 				msg = new Message(controlMessagePacket.getData(),
 						controlMessagePacket.getLength());
-				
+
 				Header header = msg.getHeader();
 				Chunk chunk = msg.getChunk();
 
 				String messageType = header.getMessageType();
-				
-				System.out.println("received   "
-						+ header.toString());
-				
-				switch(messageType)
-				{
+
+				System.out.println("received   " + header.toString());
+
+				switch (messageType) {
 				case "PUTCHUNK":
-					Backup.stored(chunk, msg.getChunkData());
+					if (ignoreChunkNo == header.getChunkNo()
+							&& ignoreFileID.equals(header.getFileId())) 
+					// se
+					// quisermos
+					// verificar
+					// que
+					// um
+					// chunk
+					// foi
+					// recebido
+					{
+						ignoreChunk=true;
+					}
+					else
+						Backup.stored(chunk, msg.getChunkData());
 					break;
 				case "STORED":
-					//incrementa rep deg do chunk armazenado no peer remoto
-					Backup.getChunkByID(header.getFileId(), header.getChunkNo()).incrementCurrentReplicationDeg();
+					// incrementa rep deg do chunk armazenado no peer remoto
+					Backup.getChunkByID(header.getFileId(), header.getChunkNo())
+							.incrementCurrentReplicationDeg();
 					break;
 				case "DELETE":
 					Backup.deleteFile(header.getFileId());
+					break;
+				case "REMOVED":
+					Backup.removed(chunk);
 					break;
 				}
 			} catch (Exception e) {
@@ -81,8 +104,7 @@ public class Multicast extends Thread {
 
 		try {
 			multicast_socket.send(controlMessagePacket);
-			System.out.println("sent   "
-					+ message.getHeader().toString());
+			System.out.println("sent   " + message.getHeader().toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -28,6 +28,7 @@ public final class Backup {
 	public static Multicast MC = new Multicast(MCgroup, MCport);
 	public static Multicast MDB = new Multicast(MDBgroup, MDBport);
 	public static Multicast MDR = new Multicast(MDRgroup, MDRport);
+	public static final int putchunkDelay = 500;
 
 	public static List<File> files = new ArrayList<File>(); // ficheiros que
 															// pertencem a este
@@ -74,6 +75,7 @@ public final class Backup {
 						return false;
 					}
 				};
+				// TODO: no chunks to load if directory empty
 				if (fileEntry.isDirectory()) {
 					for (final java.io.File fileEntry2 : fileEntry
 							.listFiles(filter)) { // chunks
@@ -85,7 +87,11 @@ public final class Backup {
 						Chunk chunk = (Chunk) ois.readObject();
 						ois.close();
 						fis.close();
-						if(getFileByID(chunk.getFileID())==null) //ficheiro não existe (chunk remoto)
+						if (getFileByID(chunk.getFileID()) == null) // ficheiro
+																	// não
+																	// existe
+																	// (chunk
+																	// remoto)
 							chunks.add(chunk);
 					}
 				}
@@ -185,6 +191,12 @@ public final class Backup {
 						"Teste", 0, 1), null);
 				MC.send(msg);
 				break;
+			case "reclaim":
+				// TODO: reclaim automático
+				// TODO: decisão do chunk a apagar
+				Chunk chunk = chunks.get(0);
+				reclaim(chunk);
+				break;
 			case "teste":
 				file = new File("bolha.png", 1);
 				for (i = 0; i < chunks.size(); i++) {
@@ -209,7 +221,7 @@ public final class Backup {
 		for (int i = 0; i < file.getChunks().size(); i++)
 			chunks.add(file.getChunks().get(i));
 	}
-	
+
 	public static File selectFile(Scanner sc) throws FileNotFoundException {
 		int i;
 		for (i = 0; i < files.size(); i++) {
@@ -222,43 +234,96 @@ public final class Backup {
 			return files.get(fileNo);
 	}
 
-	public static void deleteFile(File file) //peer local
+	public static void deleteFile(File file) // peer local
 	{
-		Header header = new Header("DELETE", null, file.getFileID(),
-				null, null);
+		Header header = new Header("DELETE", null, file.getFileID(), null, null);
 		Message message = new Message(header, null);
 		MC.send(message);
-		//TODO: mandar várias vezes para confirmar que é apagado (maybe)
-		chunks.removeAll(file.getChunks()); //apaga todos os chunks do ficheiro da lista de chunks
-		file.getChunks().get(0).deleteFileChunks(); //apaga chunks
-		file.delete(); //apaga ficheiro
-		files.remove(file); //apaga o ficheiro
+		// TODO: mandar várias vezes para confirmar que é apagado (maybe)
+		chunks.removeAll(file.getChunks()); // apaga todos os chunks do ficheiro
+											// da lista de chunks
+		file.getChunks().get(0).deleteFileChunks(); // apaga chunks
+		file.delete(); // apaga ficheiro
+		files.remove(file); // apaga o ficheiro
 	}
-	
-	public static void deleteFile(String fileID) //peer remoto
+
+	public static void deleteFile(String fileID) // peer remoto
 	{
 		Iterator<Chunk> iterator = chunks.iterator();
 		Chunk chunk = null;
 		while (iterator.hasNext()) {
 			chunk = iterator.next();
-			if(chunk.getFileID().equals(fileID))
-			{
+			if (chunk.getFileID().equals(fileID)) {
 				iterator.remove();
 			}
 		}
 		chunk.deleteFileChunks();
-		
+
 		System.out.println("Deleted " + fileID);
 	}
-	
+
 	public static void sendBackup(File file) {
 		for (int i = 0; i < file.getChunks().size(); i++)
 			putChunk(file.getChunks().get(i));
 	}
 
+	public static void reclaim(Chunk chunk) {
+		chunk.delete();
+		Header header = new Header("REMOVED", version, chunk.getFileID(),
+				chunk.getChunkNo(), null);
+		Message message = new Message(header, null);
+		MDB.ignoreFileID = chunk.getFileID();
+		MDB.ignoreChunkNo = chunk.getChunkNo();
+		//TODO: SE MANDAR SEGUNDO RECLAIM, FODEU!
+		MC.send(message);
+		new Thread() { // esperar por tempo máximo de putchunk
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(2 ^ 5 * putchunkDelay - putchunkDelay);
+					MDB.ignoreFileID = null;
+					MDB.ignoreChunkNo = null;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+		chunks.remove(chunk);
+	}
+
+	public static void removed(Chunk chunk) {
+
+		try {
+			if ((chunk = getChunkByID(chunk.getFileID(), chunk.getChunkNo())) != null) // se
+																						// tem
+																						// o
+																						// chunk
+			{
+				chunk.decrementCurrentReplicationDeg();
+				if (chunk.getCurrentReplicationDeg() < chunk
+						.getReplicationDeg()) {
+					MDB.ignoreChunk = false;
+					MDB.ignoreChunkNo = chunk.getChunkNo();
+					MDB.ignoreFileID = chunk.getFileID();
+					Thread.sleep(Math.round(Math.random() * 400));
+					if (MDB.ignoreChunk == false) // ñ recebeu entretanto
+													// PUTCHUNK com o mm fileID
+													// / chunkNo
+						putChunk(chunk);
+					MDB.ignoreChunk = null;
+					MDB.ignoreChunkNo = null;
+					MDB.ignoreFileID = null;
+				}
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static void putChunk(Chunk chunk) {
 		try {
-			int waitTime = 500;
+			int waitTime = putchunkDelay;
 			Header header = new Header("PUTCHUNK", version, chunk.getFileID(),
 					chunk.getChunkNo(), chunk.getReplicationDeg());
 			Message message = new Message(header, chunk);
@@ -267,6 +332,7 @@ public final class Backup {
 				MDB.send(message);
 				System.out.println("Waiting for stored messages...");
 				Thread.sleep(waitTime);
+				// TODO: interromper sleep se receber entretanto
 				waitTime *= 2; // duplica tempo de espera
 				if (chunk.getCurrentReplicationDeg() >= chunk
 						.getReplicationDeg())
@@ -282,7 +348,6 @@ public final class Backup {
 
 	public static void stored(Chunk chunk, byte[] chunkData) { // recebido
 																// putchunk
-
 		if (getChunkByID(chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
 																			// não
 																			// existe
