@@ -43,7 +43,9 @@ public final class Backup {
 			try {
 				fis = new FileInputStream(fileEntry);
 				ois = new ObjectInputStream(fis);
-				files.add((File) ois.readObject());
+				File file = (File) ois.readObject();
+				files.add(file);
+				addFileChunksToChunkArray(file);
 			} catch (IOException | ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -77,7 +79,9 @@ public final class Backup {
 						// ficheiro
 						fis = new FileInputStream(fileEntry2);
 						ois = new ObjectInputStream(fis);
-						chunks.add((Chunk) ois.readObject());
+						Chunk chunk = (Chunk) ois.readObject();
+						if(getFileByID(chunk.getFileID())==null) //ficheiro não existe (chunk remoto)
+							chunks.add(chunk);
 					}
 				}
 			} catch (IOException | ClassNotFoundException e) {
@@ -152,23 +156,24 @@ public final class Backup {
 					if (getFileByID(file.getFileID()) == null) {
 						file.chunker();
 						files.add(file);
-						for (int i = 0; i < file.getChunks().size(); i++)
-							chunks.add(file.getChunks().get(i));
+						addFileChunksToChunkArray(file);
 						sendBackup(file);
 					}
 				}
 				break;
 			case "restore":
 				int i;
-				System.out.println("Choose what file to restore");
-				for (i = 0; i < files.size(); i++) {
-					System.out.println(i + ": " + files.get(i).getName());
+				System.out.println("Choose which file to restore");
+				try {
+					selectFile().dechunker();
+				} catch (FileNotFoundException e) {
+					System.out.println("File not found!");
 				}
-				int fileNo = sc.nextInt();
-				if (fileNo >= i || fileNo < 0)
-					throw new FileNotFoundException();
-				else
-					files.get(fileNo).dechunker();
+				break;
+			case "delete":
+				System.out.println("Choose which file to delete");
+				File file = selectFile();
+				deleteFile(file);
 				break;
 			case "send":
 				Message msg = new Message(new Header("PUTCHUNK", version,
@@ -176,7 +181,7 @@ public final class Backup {
 				MC.send(msg);
 				break;
 			case "teste":
-				File file = new File("bolha.png", 1);
+				file = new File("bolha.png", 1);
 				for (i = 0; i < chunks.size(); i++) {
 					file.addChunk(chunks.get(i));
 				}
@@ -195,6 +200,45 @@ public final class Backup {
 		}
 	}
 
+	public static void addFileChunksToChunkArray(File file) {
+		for (int i = 0; i < file.getChunks().size(); i++)
+			chunks.add(file.getChunks().get(i));
+	}
+	
+	public static File selectFile() throws FileNotFoundException {
+		Scanner sc = new Scanner(System.in);
+		int i;
+		for (i = 0; i < files.size(); i++) {
+			System.out.println(i + ": " + files.get(i).getName());
+		}
+		int fileNo = sc.nextInt();
+		sc.close();
+		if (fileNo >= i || fileNo < 0)
+			throw new FileNotFoundException();
+		else
+			return files.get(fileNo);
+	}
+
+	public static void deleteFile(File file)
+	{
+		Header header = new Header("DELETE", null, file.getFileID(),
+				null, null);
+		Message message = new Message(header, null);
+		MC.send(message);
+		//TODO: mandar várias vezes para confirmar que é apagado (maybe)
+		chunks.removeAll(file.getChunks()); //apaga todos os chunks do ficheiro da lista de chunks
+		files.remove(file); //apaga o ficheiro
+	}
+	
+	public static void deleteFile(String fileID)
+	{
+		for(int i=0;i<chunks.size();i++)
+			if(chunks.get(i).getFileID().equals(fileID))
+				chunks.remove(i);
+		
+		System.out.println("Deleted " + fileID);
+	}
+	
 	public static void sendBackup(File file) {
 		for (int i = 0; i < file.getChunks().size(); i++)
 			putChunk(file.getChunks().get(i));
