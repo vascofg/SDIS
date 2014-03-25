@@ -60,6 +60,11 @@ public class File implements Serializable {
 	public Integer getReplicationDeg() {
 		return replicationDeg;
 	}
+	
+	public void delete() { //apaga ficheiros serializados do file
+		java.io.File file = new java.io.File("files/" + id + ".ser"); // file id
+		file.delete();
+	}
 
 	public String getFileID() {
 		try {
@@ -146,7 +151,7 @@ public class File implements Serializable {
 
 	public void serialize() {
 		try {
-			java.io.File file = new java.io.File("files/" + id); // file id
+			java.io.File file = new java.io.File("files/" + id + ".ser"); // file id
 			file.getParentFile().mkdir();
 			file.createNewFile();
 			FileOutputStream os = new FileOutputStream(file);

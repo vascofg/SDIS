@@ -57,6 +57,23 @@ public class Chunk implements Serializable {
 		return size;
 	}
 
+	public void deleteChunk() {
+		file.delete();
+		java.io.File serializeFile = new java.io.File("chunks/" + fileID + '/' + chunkNo + ".ser");
+		serializeFile.delete();
+	}
+
+	public void deleteFileChunks() // apaga todos os chunks de um determinado
+									// ficheiro
+	{
+		java.io.File folder = new java.io.File("chunks/" + fileID + '/');
+		java.io.File[] files = folder.listFiles();
+		for (java.io.File f : files) {
+			f.delete();
+		}
+		folder.delete();
+	}
+
 	public void write(byte[] data, int len) {
 		file = new java.io.File("chunks/" + fileID + '/' + chunkNo);
 		file.getParentFile().mkdirs();
@@ -69,7 +86,7 @@ public class Chunk implements Serializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.serialize(); //serializa chunk
+		this.serialize(); // serializa chunk
 	}
 
 	public byte[] read() {
@@ -88,8 +105,8 @@ public class Chunk implements Serializable {
 
 	public void serialize() {
 		try {
-			java.io.File file = new java.io.File("chunks/" + fileID + '/' + chunkNo
-					+ ".ser"); // file id
+			java.io.File file = new java.io.File("chunks/" + fileID + '/'
+					+ chunkNo + ".ser"); // file id
 			file.getParentFile().mkdir();
 			file.createNewFile();
 			FileOutputStream os = new FileOutputStream(file);

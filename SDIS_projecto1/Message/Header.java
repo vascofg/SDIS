@@ -31,9 +31,11 @@ public class Header {
 			case "CHUNK":
 			case "REMOVED":
 				this.version = data[1];
-				this.ChunkNo = Integer.parseInt(data[3]);
-			case "DELETE":
 				this.fileId = data[2];
+				this.ChunkNo = Integer.parseInt(data[3]);
+				break;
+			case "DELETE":
+				this.fileId = data[1];
 			}
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block

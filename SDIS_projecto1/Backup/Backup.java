@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -46,6 +47,8 @@ public final class Backup {
 				File file = (File) ois.readObject();
 				files.add(file);
 				addFileChunksToChunkArray(file);
+				ois.close();
+				fis.close();
 			} catch (IOException | ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -80,6 +83,8 @@ public final class Backup {
 						fis = new FileInputStream(fileEntry2);
 						ois = new ObjectInputStream(fis);
 						Chunk chunk = (Chunk) ois.readObject();
+						ois.close();
+						fis.close();
 						if(getFileByID(chunk.getFileID())==null) //ficheiro não existe (chunk remoto)
 							chunks.add(chunk);
 					}
@@ -165,14 +170,14 @@ public final class Backup {
 				int i;
 				System.out.println("Choose which file to restore");
 				try {
-					selectFile().dechunker();
+					selectFile(sc).dechunker();
 				} catch (FileNotFoundException e) {
 					System.out.println("File not found!");
 				}
 				break;
 			case "delete":
 				System.out.println("Choose which file to delete");
-				File file = selectFile();
+				File file = selectFile(sc);
 				deleteFile(file);
 				break;
 			case "send":
@@ -205,21 +210,19 @@ public final class Backup {
 			chunks.add(file.getChunks().get(i));
 	}
 	
-	public static File selectFile() throws FileNotFoundException {
-		Scanner sc = new Scanner(System.in);
+	public static File selectFile(Scanner sc) throws FileNotFoundException {
 		int i;
 		for (i = 0; i < files.size(); i++) {
 			System.out.println(i + ": " + files.get(i).getName());
 		}
 		int fileNo = sc.nextInt();
-		sc.close();
 		if (fileNo >= i || fileNo < 0)
 			throw new FileNotFoundException();
 		else
 			return files.get(fileNo);
 	}
 
-	public static void deleteFile(File file)
+	public static void deleteFile(File file) //peer local
 	{
 		Header header = new Header("DELETE", null, file.getFileID(),
 				null, null);
@@ -227,14 +230,23 @@ public final class Backup {
 		MC.send(message);
 		//TODO: mandar várias vezes para confirmar que é apagado (maybe)
 		chunks.removeAll(file.getChunks()); //apaga todos os chunks do ficheiro da lista de chunks
+		file.getChunks().get(0).deleteFileChunks(); //apaga chunks
+		file.delete(); //apaga ficheiro
 		files.remove(file); //apaga o ficheiro
 	}
 	
-	public static void deleteFile(String fileID)
+	public static void deleteFile(String fileID) //peer remoto
 	{
-		for(int i=0;i<chunks.size();i++)
-			if(chunks.get(i).getFileID().equals(fileID))
-				chunks.remove(i);
+		Iterator<Chunk> iterator = chunks.iterator();
+		Chunk chunk = null;
+		while (iterator.hasNext()) {
+			chunk = iterator.next();
+			if(chunk.getFileID().equals(fileID))
+			{
+				iterator.remove();
+			}
+		}
+		chunk.deleteFileChunks();
 		
 		System.out.println("Deleted " + fileID);
 	}
