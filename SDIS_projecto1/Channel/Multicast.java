@@ -43,16 +43,16 @@ public class Multicast extends Thread {
 	public void run() { // receive
 		super.run();
 		byte[] buf = new byte[Chunk.ChunkSize + 256];
-		DatagramPacket controlMessagePacket = new DatagramPacket(buf,
+		DatagramPacket messagePacket = new DatagramPacket(buf,
 				buf.length);
 
 		Message msg;
 
 		while (true) {
 			try {
-				multicast_socket.receive(controlMessagePacket);
-				msg = new Message(controlMessagePacket.getData(),
-						controlMessagePacket.getLength());
+				multicast_socket.receive(messagePacket);
+				msg = new Message(messagePacket.getData(),
+						messagePacket.getLength());
 
 				Header header = msg.getHeader();
 				Chunk chunk = msg.getChunk();
@@ -63,16 +63,23 @@ public class Multicast extends Thread {
 
 				switch (messageType) {
 				case "PUTCHUNK":
-					if (ignoreChunk != null && ignoreChunkNo == header.getChunkNo()
-							&& ignoreFileID.equals(header.getFileId())) 
-						ignoreChunk=true; //recebeu o chunk que queremos ignorar (não reenvia putchunk)
+					if (ignoreChunk != null
+							&& ignoreChunkNo == header.getChunkNo()
+							&& ignoreFileID.equals(header.getFileId()))
+						ignoreChunk = true; // recebeu o chunk que queremos
+											// ignorar (não reenvia putchunk)
 					else
 						Backup.stored(chunk, msg.getChunkData());
 					break;
 				case "STORED":
 					// incrementa rep deg do chunk armazenado no peer remoto
-					Backup.getChunkByID(header.getFileId(), header.getChunkNo())
-							.incrementCurrentReplicationDeg();
+					try {
+						Backup.getChunkByID(header.getFileId(),
+								header.getChunkNo())
+								.incrementCurrentReplicationDeg();
+					} catch (NullPointerException e) {
+						// n tem chunk (ignora)
+					}
 					break;
 				case "DELETE":
 					Backup.deleteFile(header.getFileId());

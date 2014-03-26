@@ -20,9 +20,9 @@ public final class Backup {
 
 	private static final String MCport = "50001";
 	public static final String MCgroup = "239.254.254.252";
-	private static final String MDBport = "50001";
+	private static final String MDBport = "50002";
 	public static final String MDBgroup = "239.254.254.253";
-	private static final String MDRport = "50001";
+	private static final String MDRport = "50003";
 	public static final String MDRgroup = "239.254.254.254";
 	public static final String version = "1.0";
 	public static long maxSpace = 256000;
@@ -304,7 +304,7 @@ public final class Backup {
 
 	public static void removed(String fileID, int chunkNo) {
 		try {
-			Chunk removedChunk = getChunkByID(fileID, chunkNo);
+			final Chunk removedChunk = getChunkByID(fileID, chunkNo);
 			if (removedChunk != null) // temos o chunk
 			{
 				removedChunk.decrementCurrentReplicationDeg();
@@ -317,7 +317,14 @@ public final class Backup {
 					if (MDB.ignoreChunk == false) // ñ recebeu entretanto
 													// PUTCHUNK com o mm fileID
 													// / chunkNo
-						putChunk(removedChunk);
+						new Thread() { // esperar por tempo máximo de putchunk
+
+							@Override
+							public void run() {
+								putChunk(removedChunk);
+							}
+						}.start();
+					;
 					MDB.ignoreChunk = null;
 					MDB.ignoreChunkNo = null;
 					MDB.ignoreFileID = null;
@@ -379,6 +386,7 @@ public final class Backup {
 				chunk.incrementCurrentReplicationDeg();
 			} else
 				System.out.println("Not enough space to store the chunk...");
-		}
+		} else
+			System.out.println("Chunk already stored!");
 	}
 }
