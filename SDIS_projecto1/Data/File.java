@@ -40,11 +40,6 @@ public class File implements Serializable {
 	String name, id;
 	List<Chunk> chunks;
 	Integer replicationDeg;
-	long size;
-
-	public long getSize() {
-		return size;
-	}
 
 	public String getName() {
 		return name;
@@ -95,7 +90,7 @@ public class File implements Serializable {
 		Chunk chunk;
 		try {
 			FileInputStream is = new FileInputStream(file);
-			size = file.length();
+			long size = file.length();
 			long numChunks = (long) Math.ceil(size / (float) Chunk.ChunkSize);
 			byte[] data = new byte[Chunk.ChunkSize];
 			int readBytes = 0;

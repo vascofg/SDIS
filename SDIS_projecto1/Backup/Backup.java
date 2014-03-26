@@ -50,7 +50,7 @@ public final class Backup {
 				ois = new ObjectInputStream(fis);
 				File file = (File) ois.readObject();
 				files.add(file);
-				addFileChunksToChunkArray(file);
+				usedSpace += addFileChunksToChunkArray(file);
 				ois.close();
 				fis.close();
 			} catch (IOException | ClassNotFoundException e) {
@@ -224,13 +224,15 @@ public final class Backup {
 		}
 	}
 
-	public static void addFileChunksToChunkArray(File file) {
+	public static long addFileChunksToChunkArray(File file) {
+		long totalSpace = 0;
 		for (int i = 0; i < file.getChunks().size(); i++) {
 			if (file.getChunks().get(i).getFile() != null) { //chunk foi reclaimed
 				chunks.add(file.getChunks().get(i));
-				usedSpace += file.getChunks().get(i).getSize();
+				totalSpace += file.getChunks().get(i).getSize();
 			}
 		}
+		return totalSpace;
 	}
 
 	public static File selectFile(Scanner sc) throws FileNotFoundException {
