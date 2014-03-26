@@ -25,7 +25,7 @@ public final class Backup {
 	private static final String MDRport = "50001";
 	public static final String MDRgroup = "239.254.254.254";
 	public static final String version = "1.0";
-	public static long maxSpace = 128000;
+	public static long maxSpace = 256000;
 	// TODO: ler maxSpace de config file
 	public static long usedSpace = 0;
 	public static Multicast MC = new Multicast(MCgroup, MCport);
@@ -172,6 +172,9 @@ public final class Backup {
 					File file = new File(data[1], Integer.parseInt(data[2]));
 					if (getFileByID(file.getFileID()) == null) {
 						file.chunker();
+						if (usedSpace > maxSpace)
+							System.out
+									.println("Max space reached! Allocate more space!");
 						files.add(file);
 						addFileChunksToChunkArray(file);
 						sendBackup(file);
@@ -227,7 +230,8 @@ public final class Backup {
 	public static long addFileChunksToChunkArray(File file) {
 		long totalSpace = 0;
 		for (int i = 0; i < file.getChunks().size(); i++) {
-			if (file.getChunks().get(i).getFile() != null) { //chunk foi reclaimed
+			if (file.getChunks().get(i).getFile() != null) { // chunk foi
+																// reclaimed
 				chunks.add(file.getChunks().get(i));
 				totalSpace += file.getChunks().get(i).getSize();
 			}
@@ -253,9 +257,8 @@ public final class Backup {
 		Message message = new Message(header, null);
 		MC.send(message);
 		// TODO: mandar várias vezes para confirmar que é apagado (maybe)
-		for(final Chunk chunk : file.getChunks())
-		{
-			chunk.delete(); //apaga ficheiros
+		for (final Chunk chunk : file.getChunks()) {
+			chunk.delete(); // apaga ficheiros
 			chunks.remove(chunk);
 		}
 		file.delete(); // apaga ficheiro
@@ -275,11 +278,11 @@ public final class Backup {
 		}
 		java.io.File folder = new java.io.File("chunks/" + fileID + '/');
 		folder.delete();
-		
+
 		System.out.println("Deleted " + fileID);
 	}
 
-	public static void sendBackup(File file) {
+	public static void sendBackup(File file) { // verificar tamanho
 		for (int i = 0; i < file.getChunks().size(); i++)
 			putChunk(file.getChunks().get(i));
 	}
@@ -299,10 +302,10 @@ public final class Backup {
 		chunks.remove(chunk); // se for o peer local, vai ficar na lista files
 	}
 
-	public static void removed(Chunk chunk) {
+	public static void removed(String fileID, int chunkNo) {
 		try {
-			Chunk removedChunk = getChunkByID(chunk.getFileID(),
-					chunk.getChunkNo());
+			Chunk removedChunk = getChunkByID(fileID, chunkNo);
+			if (removedChunk != null) // temos o chunk
 			{
 				removedChunk.decrementCurrentReplicationDeg();
 				if (removedChunk.getCurrentReplicationDeg() < removedChunk

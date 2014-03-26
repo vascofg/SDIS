@@ -78,7 +78,7 @@ public class Multicast extends Thread {
 					Backup.deleteFile(header.getFileId());
 					break;
 				case "REMOVED":
-					Backup.removed(chunk);
+					Backup.removed(header.getFileId(), header.getChunkNo());
 					break;
 				}
 			} catch (Exception e) {
