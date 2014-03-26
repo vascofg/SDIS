@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class File implements Serializable {
-	
-	//for tests only
+
+	// for tests only
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -40,6 +40,11 @@ public class File implements Serializable {
 	String name, id;
 	List<Chunk> chunks;
 	Integer replicationDeg;
+	long size;
+
+	public long getSize() {
+		return size;
+	}
 
 	public String getName() {
 		return name;
@@ -60,8 +65,8 @@ public class File implements Serializable {
 	public Integer getReplicationDeg() {
 		return replicationDeg;
 	}
-	
-	public void delete() { //apaga ficheiros serializados do file
+
+	public void delete() { // apaga ficheiros serializados do file
 		java.io.File file = new java.io.File("files/" + id + ".ser"); // file id
 		file.delete();
 	}
@@ -90,9 +95,8 @@ public class File implements Serializable {
 		Chunk chunk;
 		try {
 			FileInputStream is = new FileInputStream(file);
-			long fileSize = file.length();
-			long numChunks = (long) Math.ceil(fileSize
-					/ (float) Chunk.ChunkSize);
+			size = file.length();
+			long numChunks = (long) Math.ceil(size / (float) Chunk.ChunkSize);
 			byte[] data = new byte[Chunk.ChunkSize];
 			int readBytes = 0;
 
@@ -114,7 +118,7 @@ public class File implements Serializable {
 				chunk.write(data, 0);
 			}
 			is.close();
-			serialize(); //serializa ficheiro
+			serialize(); // serializa ficheiro
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -151,7 +155,8 @@ public class File implements Serializable {
 
 	public void serialize() {
 		try {
-			java.io.File file = new java.io.File("files/" + id + ".ser"); // file id
+			java.io.File file = new java.io.File("files/" + id + ".ser"); // file
+																			// id
 			file.getParentFile().mkdir();
 			file.createNewFile();
 			FileOutputStream os = new FileOutputStream(file);

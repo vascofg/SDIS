@@ -63,19 +63,9 @@ public class Multicast extends Thread {
 
 				switch (messageType) {
 				case "PUTCHUNK":
-					if (ignoreChunkNo == header.getChunkNo()
+					if (ignoreChunk != null && ignoreChunkNo == header.getChunkNo()
 							&& ignoreFileID.equals(header.getFileId())) 
-					// se
-					// quisermos
-					// verificar
-					// que
-					// um
-					// chunk
-					// foi
-					// recebido
-					{
-						ignoreChunk=true;
-					}
+						ignoreChunk=true; //recebeu o chunk que queremos ignorar (não reenvia putchunk)
 					else
 						Backup.stored(chunk, msg.getChunkData());
 					break;

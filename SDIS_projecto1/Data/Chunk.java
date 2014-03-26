@@ -26,6 +26,15 @@ public class Chunk implements Serializable {
 
 	String fileID;
 	Integer chunkNo, replicationDeg, size, currentReplicationDeg;
+	java.io.File file;
+
+	public java.io.File getFile() {
+		return file;
+	}
+
+	public void setFile(java.io.File file) {
+		this.file = file;
+	}
 
 	public Integer getCurrentReplicationDeg() {
 		return currentReplicationDeg;
@@ -42,8 +51,6 @@ public class Chunk implements Serializable {
 	public void decrementCurrentReplicationDeg() {
 		this.currentReplicationDeg--;
 	}
-	
-	java.io.File file;
 
 	public String getFileID() {
 		return fileID;
@@ -63,6 +70,7 @@ public class Chunk implements Serializable {
 
 	public void delete() {
 		file.delete();
+		file = null;
 		java.io.File serializeFile = new java.io.File("chunks/" + fileID + '/' + chunkNo + ".ser");
 		serializeFile.delete();
 	}

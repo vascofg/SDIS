@@ -25,6 +25,9 @@ public final class Backup {
 	private static final String MDRport = "50001";
 	public static final String MDRgroup = "239.254.254.254";
 	public static final String version = "1.0";
+	public static long maxSpace = 256000;
+	// TODO: ler maxSpace de config file
+	public static long usedSpace = 0;
 	public static Multicast MC = new Multicast(MCgroup, MCport);
 	public static Multicast MDB = new Multicast(MDBgroup, MDBport);
 	public static Multicast MDR = new Multicast(MDRgroup, MDRport);
@@ -93,6 +96,7 @@ public final class Backup {
 																	// (chunk
 																	// remoto)
 							chunks.add(chunk);
+						usedSpace += chunk.getSize();
 					}
 				}
 			} catch (IOException | ClassNotFoundException e) {
@@ -192,10 +196,11 @@ public final class Backup {
 				MC.send(msg);
 				break;
 			case "reclaim":
-				// TODO: reclaim automático
-				// TODO: decisão do chunk a apagar
-				Chunk chunk = chunks.get(0);
-				reclaim(chunk);
+				System.out.println("Espaço actual: " + usedSpace);
+				System.out.println("Espaço máximo: " + maxSpace);
+				System.out.print("Novo espaço máximo: ");
+				maxSpace = sc.nextLong();
+				reclaimChoice();
 				break;
 			case "teste":
 				file = new File("bolha.png", 1);
@@ -218,8 +223,10 @@ public final class Backup {
 	}
 
 	public static void addFileChunksToChunkArray(File file) {
-		for (int i = 0; i < file.getChunks().size(); i++)
+		for (int i = 0; i < file.getChunks().size(); i++) {
 			chunks.add(file.getChunks().get(i));
+			usedSpace += file.getChunks().get(i).getSize();
+		}
 	}
 
 	public static File selectFile(Scanner sc) throws FileNotFoundException {
@@ -242,6 +249,7 @@ public final class Backup {
 		// TODO: mandar várias vezes para confirmar que é apagado (maybe)
 		chunks.removeAll(file.getChunks()); // apaga todos os chunks do ficheiro
 											// da lista de chunks
+		usedSpace -= file.getSize();
 		file.getChunks().get(0).deleteFileChunks(); // apaga chunks
 		file.delete(); // apaga ficheiro
 		files.remove(file); // apaga o ficheiro
@@ -254,6 +262,7 @@ public final class Backup {
 		while (iterator.hasNext()) {
 			chunk = iterator.next();
 			if (chunk.getFileID().equals(fileID)) {
+				usedSpace -= chunk.getSize();
 				iterator.remove();
 			}
 		}
@@ -267,37 +276,27 @@ public final class Backup {
 			putChunk(file.getChunks().get(i));
 	}
 
+	public static void reclaimChoice() {
+		while (usedSpace > maxSpace) {
+			reclaim(chunks.get((int) (Math.floor(Math.random()
+					* (chunks.size() - 1))))); // apaga chunk aleatório
+		}
+	}
+
 	public static void reclaim(Chunk chunk) {
 		chunk.delete();
 		Header header = new Header("REMOVED", version, chunk.getFileID(),
 				chunk.getChunkNo(), null);
 		Message message = new Message(header, null);
-		MDB.ignoreFileID = chunk.getFileID();
-		MDB.ignoreChunkNo = chunk.getChunkNo();
-		//TODO: SE MANDAR SEGUNDO RECLAIM, FODEU!
 		MC.send(message);
-		new Thread() { // esperar por tempo máximo de putchunk
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(2 ^ 5 * putchunkDelay - putchunkDelay);
-					MDB.ignoreFileID = null;
-					MDB.ignoreChunkNo = null;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}.start();
-		chunks.remove(chunk);
+		chunks.remove(chunk); // se for o peer local, vai ficar na lista files
 	}
 
 	public static void removed(Chunk chunk) {
+		Chunk removedChunk = getChunkByID(chunk.getFileID(), chunk.getChunkNo());
 
 		try {
-			if ((chunk = getChunkByID(chunk.getFileID(), chunk.getChunkNo())) != null) // se
-																						// tem
-																						// o
-																						// chunk
+			if (removedChunk != null) // temos o chunk
 			{
 				chunk.decrementCurrentReplicationDeg();
 				if (chunk.getCurrentReplicationDeg() < chunk
@@ -352,19 +351,24 @@ public final class Backup {
 																			// não
 																			// existe
 		{
-			chunks.add(chunk);
-			chunk.write(chunkData, chunkData.length);
-			Header header = new Header("STORED", version, chunk.getFileID(),
-					chunk.getChunkNo(), null);
-			Message message = new Message(header, null);
-			try {
-				Thread.sleep(Math.round(Math.random() * 400));
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (usedSpace + chunk.getSize() < maxSpace) { //se tiver espaço para guardar
+				chunks.add(chunk);
+				usedSpace += chunk.getSize();
+				chunk.write(chunkData, chunkData.length);
+				Header header = new Header("STORED", version,
+						chunk.getFileID(), chunk.getChunkNo(), null);
+				Message message = new Message(header, null);
+				try {
+					Thread.sleep(Math.round(Math.random() * 400));
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				MC.send(message);
+				chunk.incrementCurrentReplicationDeg();
 			}
-			MC.send(message);
-			chunk.incrementCurrentReplicationDeg();
+			else
+				System.out.println("Not enough space to store the chunk...");
 		}
 	}
 }
