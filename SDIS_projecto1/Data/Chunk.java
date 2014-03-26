@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import Backup.Backup;
+
 public class Chunk implements Serializable {
 
 	/**
@@ -71,23 +73,14 @@ public class Chunk implements Serializable {
 	public void delete() {
 		file.delete();
 		file = null;
+		Backup.usedSpace-=size;
 		java.io.File serializeFile = new java.io.File("chunks/" + fileID + '/' + chunkNo + ".ser");
 		serializeFile.delete();
 	}
 
-	public void deleteFileChunks() // apaga todos os chunks de um determinado
-									// ficheiro
-	{
-		java.io.File folder = new java.io.File("chunks/" + fileID + '/');
-		java.io.File[] files = folder.listFiles();
-		for (java.io.File f : files) {
-			f.delete();
-		}
-		folder.delete();
-	}
-
 	public void write(byte[] data, int len) {
 		file = new java.io.File("chunks/" + fileID + '/' + chunkNo);
+		Backup.usedSpace+=size;
 		file.getParentFile().mkdirs();
 		try {
 
