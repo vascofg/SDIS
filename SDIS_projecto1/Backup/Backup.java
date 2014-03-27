@@ -189,6 +189,7 @@ public final class Backup {
 				try {
 					File file = selectFile(sc);
 					getMisingChunks(file);
+					file.dechunker();
 				} catch (FileNotFoundException e) {
 					System.out.println("File not found!");
 				}
@@ -429,9 +430,7 @@ public final class Backup {
 			chunk = iterator.next();
 			if (chunk.getFile() == null) {
 				askChunk(chunk);
-			}
-			file.dechunker();
-			
+			}	
 		}
 	}
 
