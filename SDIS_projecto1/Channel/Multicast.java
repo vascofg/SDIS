@@ -70,7 +70,7 @@ public class Multicast extends Thread {
 					else
 						Backup.stored(chunk, msg.getChunkData());
 					break;
-				case "RESTORE":
+				case "GETCHUNK":
 					if (ignoreChunk != null
 							&& ignoreChunkNo == header.getChunkNo()
 							&& ignoreFileID.equals(header.getFileId()))

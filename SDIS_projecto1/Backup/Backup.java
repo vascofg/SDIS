@@ -432,12 +432,10 @@ public final class Backup {
 	}
 
 	public static void askChunk(Chunk chunk) {
-
 		Header header = new Header("GETCHUNK", version, chunk.getFileID(),
 				chunk.getChunkNo(), null);
 		Message message = new Message(header, null);
 		MC.send(message);
-
 	}
 
 	public static void gotChunk(Chunk chunk, byte[] chunkData) {
@@ -448,8 +446,8 @@ public final class Backup {
 			if (chunkTemp.getFileID() == chunk.getFileID()
 					&& chunkTemp.getChunkNo() == chunk.getChunkNo()) {
 				chunkTemp.write(chunkData, chunkData.length);
+				chunks.add(chunkTemp);
 			}
 		}
 	}
-
 }
