@@ -189,7 +189,7 @@ public final class Backup {
 				try {
 					File file = selectFile(sc);
 					getMisingChunks(file);
-					file.dechunker();
+					//TODO: restaurar chunks automagically
 				} catch (FileNotFoundException e) {
 					System.out.println("File not found!");
 				}
@@ -452,5 +452,8 @@ public final class Backup {
 				chunks.add(chunkTemp);
 			}
 		}
+		//set tiver os chunks todos, reconstroi ficheiro
+		if(file.gotAllChunks())
+			file.dechunker();
 	}
 }

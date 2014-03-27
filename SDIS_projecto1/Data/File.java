@@ -65,6 +65,13 @@ public class File implements Serializable {
 		java.io.File file = new java.io.File("files/" + id + ".ser"); // file id
 		file.delete();
 	}
+	
+	public Boolean gotAllChunks() {
+		for(final Chunk chunk : getChunks())
+			if(chunk.file==null)
+				return false;
+		return true;
+	}
 
 	public String getFileID() {
 		try {
