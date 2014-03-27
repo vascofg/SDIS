@@ -282,7 +282,7 @@ public final class Backup {
 		System.out.println("Deleted " + fileID);
 	}
 
-	public static void sendBackup(File file) { // verificar tamanho
+	public static void sendBackup(File file) {
 		for (int i = 0; i < file.getChunks().size(); i++)
 			putChunk(file.getChunks().get(i));
 	}
