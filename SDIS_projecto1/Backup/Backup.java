@@ -185,7 +185,8 @@ public final class Backup {
 				int i;
 				System.out.println("Choose which file to restore");
 				try {
-					selectFile(sc).dechunker();
+					File file = selectFile(sc);
+					getMisingChunks(file);
 				} catch (FileNotFoundException e) {
 					System.out.println("File not found!");
 				}
@@ -200,7 +201,7 @@ public final class Backup {
 						"Teste", 0, 1), null);
 				MC.send(msg);
 				break;
-			case "reclaim":
+			case "reclaim":// TODO: mudar nome
 				System.out.println("Espaço actual: " + usedSpace);
 				System.out.println("Espaço máximo: " + maxSpace);
 				System.out.print("Novo espaço máximo: ");
@@ -389,4 +390,66 @@ public final class Backup {
 		} else
 			System.out.println("Chunk already stored!");
 	}
+
+	public static void sendChunk(String fileId, Integer chunkNo) {
+
+		try {
+			Chunk chunk = getChunkByID(fileId, chunkNo);
+
+			if (chunk != null) {
+				Header header = new Header("CHUNK", version, chunk.getFileID(),
+						chunk.getChunkNo(), null);
+				Message message = new Message(header, chunk);
+				MDR.ignoreChunk = false;
+				MDR.ignoreChunkNo = chunk.getChunkNo();
+				MDR.ignoreFileID = chunk.getFileID();
+				Thread.sleep(Math.round(Math.random() * 400));
+				if (MDR.ignoreChunk == false) // ñ recebeu entretanto
+					// CHUNK com o mm fileID
+					// / chunkNo
+					MDR.send(message);
+
+				MDR.ignoreChunk = null;
+				MDR.ignoreChunkNo = null;
+				MDR.ignoreFileID = null;
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public static void getMisingChunks(File file) {
+		Iterator<Chunk> iterator = file.getChunks().iterator();
+		Chunk chunk = null;
+		while (iterator.hasNext()) {
+			chunk = iterator.next();
+			if (chunk.getFile() == null) {
+				askChunk(chunk);
+			}
+		}
+	}
+
+	public static void askChunk(Chunk chunk) {
+
+		Header header = new Header("GETCHUNK", version, chunk.getFileID(),
+				chunk.getChunkNo(), null);
+		Message message = new Message(header, null);
+		MC.send(message);
+
+	}
+
+	public static void gotChunk(Chunk chunk, byte[] chunkData) {
+		File file = getFileByID(chunk.getFileID());
+		Chunk chunkTemp = null;
+		for (int i = 0; i < file.getChunks().size(); i++) {
+			chunkTemp = file.getChunks().get(i);
+			if (chunkTemp.getFileID() == chunk.getFileID()
+					&& chunkTemp.getChunkNo() == chunk.getChunkNo()) {
+				chunkTemp.write(chunkData, chunkData.length);
+			}
+		}
+	}
+
 }
