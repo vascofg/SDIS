@@ -443,7 +443,7 @@ public final class Backup {
 		Chunk chunkTemp = null;
 		for (int i = 0; i < file.getChunks().size(); i++) {
 			chunkTemp = file.getChunks().get(i);
-			if (chunkTemp.getFileID() == chunk.getFileID()
+			if (chunkTemp.getFileID().equals(chunk.getFileID())
 					&& chunkTemp.getChunkNo() == chunk.getChunkNo()) {
 				chunkTemp.write(chunkData, chunkData.length);
 				chunks.add(chunkTemp);
