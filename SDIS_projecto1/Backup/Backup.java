@@ -1,3 +1,5 @@
+//TODO: TESTAR MAIS!
+
 package Backup;
 
 import java.io.FileInputStream;
@@ -428,6 +430,8 @@ public final class Backup {
 			if (chunk.getFile() == null) {
 				askChunk(chunk);
 			}
+			file.dechunker();
+			
 		}
 	}
 
