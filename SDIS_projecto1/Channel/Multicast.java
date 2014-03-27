@@ -43,8 +43,7 @@ public class Multicast extends Thread {
 	public void run() { // receive
 		super.run();
 		byte[] buf = new byte[Chunk.ChunkSize + 256];
-		DatagramPacket messagePacket = new DatagramPacket(buf,
-				buf.length);
+		DatagramPacket messagePacket = new DatagramPacket(buf, buf.length);
 
 		Message msg;
 
@@ -71,6 +70,16 @@ public class Multicast extends Thread {
 					else
 						Backup.stored(chunk, msg.getChunkData());
 					break;
+				case "RESTORE":
+					if (ignoreChunk != null
+							&& ignoreChunkNo == header.getChunkNo()
+							&& ignoreFileID.equals(header.getFileId()))
+						ignoreChunk = true; // recebeu o chunk que queremos
+											// ignorar (não reenvia CHUNK)
+					else
+						Backup.sendChunk(header.getFileId(),
+								header.getChunkNo());
+					break;
 				case "STORED":
 					// incrementa rep deg do chunk armazenado no peer remoto
 					try {
@@ -86,6 +95,9 @@ public class Multicast extends Thread {
 					break;
 				case "REMOVED":
 					Backup.removed(header.getFileId(), header.getChunkNo());
+					break;
+				case "CHUNK":
+					Backup.gotChunk(chunk, msg.getChunkData());
 					break;
 				}
 			} catch (Exception e) {
