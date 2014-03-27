@@ -123,7 +123,7 @@ public final class Backup {
 	public static File getFileByID(String fileID) {
 		for (int i = 0; i < files.size(); i++) {
 			File file = files.get(i);
-			if (file.getFileID().equals(fileID))
+			if (file.getId().equals(fileID))
 				return file;
 		}
 		return null;
@@ -172,7 +172,7 @@ public final class Backup {
 					System.out.println("usage: backup <filename> <repdeg>");
 				else {
 					File file = new File(data[1], Integer.parseInt(data[2]));
-					if (getFileByID(file.getFileID()) == null) {
+					if (getFileByID(file.getId()) == null) {
 						file.chunker();
 						if (usedSpace > maxSpace)
 							System.out
@@ -257,7 +257,7 @@ public final class Backup {
 
 	public static void deleteFile(File file) // peer local
 	{
-		Header header = new Header("DELETE", null, file.getFileID(), null, null);
+		Header header = new Header("DELETE", null, file.getId(), null, null);
 		Message message = new Message(header, null);
 		MC.send(message);
 		// TODO: mandar várias vezes para confirmar que é apagado (maybe)
