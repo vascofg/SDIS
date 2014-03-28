@@ -474,18 +474,25 @@ public final class Backup {
 			if (usedSpace + chunk.getSize() <= maxSpace) { // se tiver espaço
 															// para guardar
 				chunks.add(chunk);
-				chunk.write(chunkData, chunkData.length);
-				Header header = new Header("STORED", version,
-						chunk.getFileID(), chunk.getChunkNo(), null);
-				Message message = new Message(header, null);
 				try {
 					Thread.sleep(Math.round(Math.random() * 400));
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				MC.send(message);
-				chunk.incrementCurrentReplicationDeg();
+				if (chunk.getCurrentReplicationDeg() >= chunk
+						.getReplicationDeg()) // se não tiver atingido rep deg
+												// desejado, guarda e envia
+												// stored
+				{
+					chunk.write(chunkData, chunkData.length);
+					Header header = new Header("STORED", version,
+							chunk.getFileID(), chunk.getChunkNo(), null);
+					Message message = new Message(header, null);
+					MC.send(message);
+					chunk.incrementCurrentReplicationDeg();
+				} else
+					chunks.remove(chunk); // descarta (ENHANCEMENT)
 			} else
 				System.out.println("Not enough space to store the chunk...");
 		} else
