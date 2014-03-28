@@ -111,6 +111,29 @@ public final class Backup {
 		}
 	}
 
+	public static void resendDelete() {
+		java.io.File folder = new java.io.File("deletedFiles/");
+		FileInputStream fis;
+		ObjectInputStream ois;
+		for (final java.io.File fileEntry : folder.listFiles()) {
+			try {
+				fis = new FileInputStream(fileEntry);
+				ois = new ObjectInputStream(fis);
+				File file = (File) ois.readObject();
+				file.setDeleted(true); // marca para remoção
+				deleteFile(file);
+				ois.close();
+				fis.close();
+				fileEntry.delete();
+			} catch (NullPointerException e) {
+				// do nothing
+			} catch (IOException | ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static void saveFiles() {
 		for (int i = 0; i < files.size(); i++)
 			files.get(i).serialize();
@@ -166,6 +189,8 @@ public final class Backup {
 		} catch (Exception n) {
 			System.out.println("No config files to load");
 		}
+
+		resendDelete();
 
 		while (true) {
 			System.out.println("Choose one option\n");
@@ -358,13 +383,17 @@ public final class Backup {
 		Header header = new Header("DELETE", null, file.getId(), null, null);
 		Message message = new Message(header, null);
 		MC.send(message);
-		// TODO: mandar várias vezes para confirmar que é apagado (maybe)
-		for (final Chunk chunk : file.getChunks()) {
-			chunk.delete(); // apaga ficheiros
-			chunks.remove(chunk);
+		if (!file.isDeleted()) {
+			for (final Chunk chunk : file.getChunks()) {
+				chunk.delete(); // apaga ficheiros
+				chunks.remove(chunk);
+			}
+			file.delete(); // apaga ficheiro
+			file.serializeDeletedFile(); // guarda para posterior DELETE
+			files.remove(file); // apaga o ficheiro
+		} else {
+			file.eraseDeletedFile();
 		}
-		file.delete(); // apaga ficheiro
-		files.remove(file); // apaga o ficheiro
 	}
 
 	public static void deleteFile(String fileID) // peer remoto
@@ -480,7 +509,7 @@ public final class Backup {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if (chunk.getCurrentReplicationDeg() >= chunk
+				if (chunk.getCurrentReplicationDeg() < chunk
 						.getReplicationDeg()) // se não tiver atingido rep deg
 												// desejado, guarda e envia
 												// stored

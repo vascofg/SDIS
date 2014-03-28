@@ -102,7 +102,7 @@ public class Multicast extends Thread {
 					break;
 				}
 			} catch (SocketException e) {
-				//thread interrompida, sair do loop
+				// thread interrompida, sair do loop
 				break;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -122,7 +122,7 @@ public class Multicast extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void interrupt() {
 		super.interrupt();

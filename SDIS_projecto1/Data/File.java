@@ -40,6 +40,15 @@ public class File implements Serializable {
 	String name, id;
 	List<Chunk> chunks;
 	Integer replicationDeg;
+	transient boolean deleted;
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
 
 	public String getName() {
 		return name;
@@ -170,6 +179,29 @@ public class File implements Serializable {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public void serializeDeletedFile() {
+		try {
+			java.io.File file = new java.io.File("deletedFiles/" + id + ".ser"); // file
+																			// id
+			file.getParentFile().mkdir();
+			file.createNewFile();
+			FileOutputStream os = new FileOutputStream(file);
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			oos.writeObject(this);
+			oos.close();
+			os.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public void eraseDeletedFile() {
+		java.io.File file = new java.io.File("deletedFiles/" + id + ".ser"); // file id
+		file.delete();
 	}
 
 }

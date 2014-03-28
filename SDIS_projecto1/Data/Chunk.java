@@ -71,18 +71,19 @@ public class Chunk implements Serializable {
 	}
 
 	public void delete() {
-		if(file==null)
-			return; //chunk já apagado
+		if (file == null)
+			return; // chunk já apagado
 		file.delete();
 		file = null;
-		Backup.usedSpace-=size;
-		java.io.File serializeFile = new java.io.File("chunks/" + fileID + '/' + chunkNo + ".ser");
+		Backup.usedSpace -= size;
+		java.io.File serializeFile = new java.io.File("chunks/" + fileID + '/'
+				+ chunkNo + ".ser");
 		serializeFile.delete();
 	}
 
 	public void write(byte[] data, int len) {
 		file = new java.io.File("chunks/" + fileID + '/' + chunkNo);
-		Backup.usedSpace+=size;
+		Backup.usedSpace += size;
 		file.getParentFile().mkdirs();
 		try {
 
