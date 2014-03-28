@@ -128,10 +128,9 @@ public class File implements Serializable {
 	}
 
 	public void dechunker() {
-		// TODO: Verificar se temos todos os chunks e obter chunks em falta
 		java.io.File file = new java.io.File(name);
 		try {
-			if (file.createNewFile()) // ficheiro nï¿½o existe
+			if (file.createNewFile()) // ficheiro não existe
 			{
 				java.io.File chunk;
 				FileInputStream is = null;

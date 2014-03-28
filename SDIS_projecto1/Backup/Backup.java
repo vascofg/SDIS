@@ -31,7 +31,6 @@ public final class Backup {
 	public static String MDRgroup = "239.254.254.254";
 	public static String version = "1.0";
 	public static long maxSpace = 256000;
-	// TODO: ler maxSpace de config file
 	public static long usedSpace = 0;
 	public static Multicast MC = new Multicast(MCgroup, MCport);
 	public static Multicast MDB = new Multicast(MDBgroup, MDBport);
@@ -83,7 +82,6 @@ public final class Backup {
 						return false;
 					}
 				};
-				// TODO: no chunks to load if directory empty
 				if (fileEntry.isDirectory()) {
 					for (final java.io.File fileEntry2 : fileEntry
 							.listFiles(filter)) { // chunks
@@ -170,7 +168,6 @@ public final class Backup {
 		}
 
 		while (true) {
-			System.out.println("I am ready to receive\n\n");
 			System.out.println("Choose one option\n");
 			System.out.println("1 ------------- Backup File");
 			System.out.println("2 ------------- Restore File");
@@ -200,7 +197,6 @@ public final class Backup {
 				}
 				break;
 			case "2":
-				int i;
 				System.out.println("Choose which file to restore");
 				try {
 					file = selectFile(sc);
@@ -224,17 +220,7 @@ public final class Backup {
 						"Teste", 0, 1), null);
 				MC.send(msg);
 				break;
-
-			case "teste":
-				file = new File("bolha.png", 1);
-				for (i = 0; i < chunks.size(); i++) {
-					file.addChunk(chunks.get(i));
-				}
-				file.setId(chunks.get(0).getFileID());
-				file.dechunker();
-				break;
 			case "4":
-				System.out.println("what do you want to change");
 				System.out.println("Current Settings");
 				System.out.print("MC group :  " + MCgroup);
 				System.out.println("  MC port  : " + MCport);
@@ -242,11 +228,12 @@ public final class Backup {
 				System.out.println("  MDB port : " + MDBport);
 				System.out.print("MDR group : " + MDRgroup);
 				System.out.println("  MDR port : " + MDRport);
+				System.out.println("\nUsed Space  :  " + usedSpace);
 				System.out.println("Max Space  : " + maxSpace);
 				System.out.println("1 ---------------- Control Channel");
 				System.out.println("2 ---------------- Data Backup Channel");
 				System.out.println("3 ---------------- Data Recovery Channel");
-				System.out.println("4 ---------------- Max used space");
+				System.out.println("4 ---------------- Max storage space");
 
 				cmd = sc.nextLine();
 
@@ -269,8 +256,7 @@ public final class Backup {
 					MDRgroup = data[0];
 					MDRport = data[1];
 					break;
-
-				case "4":// TODO: mudar nome
+				case "4":
 					System.out.println("Espaço actual: " + usedSpace);
 					System.out.println("Espaço máximo: " + maxSpace);
 					System.out.print("Novo espaço máximo: ");
@@ -292,6 +278,7 @@ public final class Backup {
 				MDR.interrupt();
 				saveFiles();
 				saveChunks();
+				saveConfs();
 				return;
 			default:
 				System.out.println("choose the right number please");
@@ -535,12 +522,17 @@ public final class Backup {
 	}
 
 	public static void getMisingChunks(File file) {
-		Iterator<Chunk> iterator = file.getChunks().iterator();
-		Chunk chunk = null;
-		while (iterator.hasNext()) {
-			chunk = iterator.next();
-			if (chunk.getFile() == null) {
-				askChunk(chunk);
+		if (file.gotAllChunks()) {
+			System.out.println("Got all chunks. Restoring now...");
+			file.dechunker();
+		} else {
+			Iterator<Chunk> iterator = file.getChunks().iterator();
+			Chunk chunk = null;
+			while (iterator.hasNext()) {
+				chunk = iterator.next();
+				if (chunk.getFile() == null) {
+					askChunk(chunk);
+				}
 			}
 		}
 	}
@@ -565,7 +557,9 @@ public final class Backup {
 		}
 
 		// se tiver os chunks todos, reconstroi ficheiro
-		if (file.gotAllChunks())
+		if (file.gotAllChunks()) {
+			System.out.println("Got all chunks. Restoring now...");
 			file.dechunker();
+		}
 	}
 }
