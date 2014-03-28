@@ -2,11 +2,14 @@
 
 package Backup;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,13 +23,13 @@ import Channel.Multicast;
 
 public final class Backup {
 
-	private static final String MCport = "50001";
-	public static final String MCgroup = "239.254.254.252";
-	private static final String MDBport = "50002";
-	public static final String MDBgroup = "239.254.254.253";
-	private static final String MDRport = "50003";
-	public static final String MDRgroup = "239.254.254.254";
-	public static final String version = "1.0";
+	private static String MCport = "50001";
+	public static String MCgroup = "239.254.254.252";
+	private static String MDBport = "50002";
+	public static String MDBgroup = "239.254.254.253";
+	private static String MDRport = "50003";
+	public static String MDRgroup = "239.254.254.254";
+	public static String version = "1.0";
 	public static long maxSpace = 256000;
 	// TODO: ler maxSpace de config file
 	public static long usedSpace = 0;
@@ -142,7 +145,7 @@ public final class Backup {
 	public static void main(String[] args) throws IOException {
 		String cmd;
 		Scanner sc = new Scanner(System.in);
-		String data[];
+		String data[]= null;
 
 		MC.start();
 		MDB.start();
@@ -150,6 +153,7 @@ public final class Backup {
 
 		try {
 			loadFiles();
+			loadConfs();
 		} catch (NullPointerException n) {
 			System.out.println("No files to load");
 		}
@@ -161,42 +165,48 @@ public final class Backup {
 		}
 
 		while (true) {
+			System.out.println("Choose one option\n");
+			System.out.println("1 ------------- Backup File");
+			System.out.println("2 ------------- Restore File");
+			System.out.println("3 ------------- Delete file");
+			System.out.println("4 ------------- Change Settings");
+			System.out.println("5 ------------- Exit");
+
 			System.out.print('>');
 			cmd = sc.nextLine();
-			data = cmd.split(" ");
 
-			switch (data[0]) // backup <filename> <repdeg>, restore
-			{
-			case "backup":
-				if (data.length < 3)
-					System.out.println("usage: backup <filename> <repdeg>");
-				else {
-					File file = new File(data[1], Integer.parseInt(data[2]));
-					if (getFileByID(file.getId()) == null) {
-						file.chunker();
-						if (usedSpace > maxSpace)
-							System.out
-									.println("Max space reached! Allocate more space!");
-						files.add(file);
-						addFileChunksToChunkArray(file);
-						sendBackup(file);
-					}
+			switch (cmd) {
+			case "1":
+				System.out
+						.println("Write the file name and replication number <Filename> <RepNumber>");
+				cmd = sc.nextLine();
+				data = cmd.split(" ");
+				File file = new File(data[0], Integer.parseInt(data[1]));
+				if (getFileByID(file.getId()) == null) {
+					file.chunker();
+					if (usedSpace > maxSpace)
+						System.out
+								.println("Max space reached! Allocate more space!");
+					files.add(file);
+					addFileChunksToChunkArray(file);
+					sendBackup(file);
+
 				}
 				break;
-			case "restore":
+			case "2":
 				int i;
 				System.out.println("Choose which file to restore");
 				try {
-					File file = selectFile(sc);
+					file = selectFile(sc);
 					getMisingChunks(file);
-					//TODO: restaurar chunks automagically
+					// TODO: restaurar chunks automagically
 				} catch (FileNotFoundException e) {
 					System.out.println("File not found!");
 				}
 				break;
-			case "delete":
+			case "3":
 				System.out.println("Choose which file to delete");
-				File file = selectFile(sc);
+				file = selectFile(sc);
 				deleteFile(file);
 				break;
 			case "send":
@@ -204,13 +214,7 @@ public final class Backup {
 						"Teste", 0, 1), null);
 				MC.send(msg);
 				break;
-			case "reclaim":// TODO: mudar nome
-				System.out.println("Espaço actual: " + usedSpace);
-				System.out.println("Espaço máximo: " + maxSpace);
-				System.out.print("Novo espaço máximo: ");
-				maxSpace = sc.nextLong();
-				reclaimChoice();
-				break;
+
 			case "teste":
 				file = new File("bolha.png", 1);
 				for (i = 0; i < chunks.size(); i++) {
@@ -219,7 +223,59 @@ public final class Backup {
 				file.setId(chunks.get(0).getFileID());
 				file.dechunker();
 				break;
-			case "exit":
+			case "4":
+				System.out.println("what do you want to change");
+				System.out.println("Current Settings");
+				System.out.print("MC group :  " + MCgroup);
+				System.out.println("  MC port  : " + MCport);
+				System.out.print("MDB group : " + MDBgroup);
+				System.out.println("  MDB port : " + MDBport);
+				System.out.print("MDR group : " + MDRgroup);
+				System.out.println("  MDR port : " + MDRport);
+				System.out.println("Max Space  : "+ maxSpace);
+				System.out.println("1 ---------------- Control Channel");
+				System.out.println("2 ---------------- Data Backup Channel");
+				System.out.println("3 ---------------- Data Recovery Channel");
+				System.out.println("4 ---------------- Max used space");
+
+				cmd = sc.nextLine();
+
+				if (cmd.equals("1") || cmd.equals("2") || cmd.equals("3")) {
+					System.out
+							.println("Insert Group IP and Port <group> <Port>");
+					String cenas = sc.nextLine();
+					data = cenas.split(" ");
+				}
+				switch (cmd) {
+				case "1":
+					MCgroup = data[0];
+					MCport = data[1];
+					break;
+				case "2":
+					MDBgroup = data[0];
+					MDBport = data[1];
+					break;
+				case "3":
+					MDRgroup = data[0];
+					MDRport = data[1];
+					break;
+
+				case "4":// TODO: mudar nome
+					System.out.println("Espaço actual: " + usedSpace);
+					System.out.println("Espaço máximo: " + maxSpace);
+					System.out.print("Novo espaço máximo: ");
+					maxSpace = sc.nextLong();
+					reclaimChoice();
+					break;
+
+				default:
+					System.out.println("choose the right number please");
+					break;
+
+				}
+				saveConfs();
+				break;
+			case "5":
 				sc.close();
 				MC.interrupt();
 				MDB.interrupt();
@@ -227,8 +283,57 @@ public final class Backup {
 				saveFiles();
 				saveChunks();
 				return;
+			default:
+				System.out.println("choose the right number please");
+				break;
 			}
 		}
+	}
+
+	public static void saveConfs() {
+
+		PrintWriter out;
+		try {
+			out = new PrintWriter("confs.rv");
+			out.println(MCgroup + " " + MCport);
+			out.println(MDBgroup + " " + MDBport);
+			out.println(MDRgroup + " " + MDRport);
+			out.println(maxSpace);
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public static void loadConfs() {
+		java.io.File fi = new java.io.File("confs.rv");
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(fi));
+			String line;
+			String[] temp;
+			line = br.readLine();
+			temp = line.split(" ");
+			MCgroup = temp[0];
+			MCport = temp[1];
+			line = br.readLine();
+			temp = line.split(" ");
+			MDBgroup = temp[0];
+			MDBport = temp[1];
+			line = br.readLine();
+			temp = line.split(" ");
+			MDRgroup = temp[0];
+			MDRport = temp[1];
+			line = br.readLine();
+			maxSpace = Integer.parseInt(line);
+
+			br.close();
+		} catch (IOException e) {
+			System.out.println("Conf file not found default settings applied");
+		}
+
 	}
 
 	public static long addFileChunksToChunkArray(File file) {
@@ -430,7 +535,7 @@ public final class Backup {
 			chunk = iterator.next();
 			if (chunk.getFile() == null) {
 				askChunk(chunk);
-			}	
+			}
 		}
 	}
 
@@ -452,8 +557,8 @@ public final class Backup {
 				chunks.add(chunkTemp);
 			}
 		}
-		//set tiver os chunks todos, reconstroi ficheiro
-		if(file.gotAllChunks())
+		// set tiver os chunks todos, reconstroi ficheiro
+		if (file.gotAllChunks())
 			file.dechunker();
 	}
 }
