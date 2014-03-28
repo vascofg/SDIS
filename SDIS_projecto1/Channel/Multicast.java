@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketException;
 
 import Message.Header;
 import Message.Message;
@@ -100,6 +101,9 @@ public class Multicast extends Thread {
 					Backup.gotChunk(chunk, msg.getChunkData());
 					break;
 				}
+			} catch (SocketException e) {
+				//thread interrompida, sair do loop
+				break;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -117,5 +121,11 @@ public class Multicast extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void interrupt() {
+		super.interrupt();
+		multicast_socket.close();
 	}
 }

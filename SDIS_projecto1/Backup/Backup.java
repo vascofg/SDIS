@@ -145,7 +145,7 @@ public final class Backup {
 	public static void main(String[] args) throws IOException {
 		String cmd;
 		Scanner sc = new Scanner(System.in);
-		String data[]= null;
+		String data[] = null;
 
 		MC.start();
 		MDB.start();
@@ -199,7 +199,7 @@ public final class Backup {
 				try {
 					file = selectFile(sc);
 					getMisingChunks(file);
-					// TODO: restaurar chunks automagically
+
 				} catch (FileNotFoundException e) {
 					System.out.println("File not found!");
 				}
@@ -232,7 +232,7 @@ public final class Backup {
 				System.out.println("  MDB port : " + MDBport);
 				System.out.print("MDR group : " + MDRgroup);
 				System.out.println("  MDR port : " + MDRport);
-				System.out.println("Max Space  : "+ maxSpace);
+				System.out.println("Max Space  : " + maxSpace);
 				System.out.println("1 ---------------- Control Channel");
 				System.out.println("2 ---------------- Data Backup Channel");
 				System.out.println("3 ---------------- Data Recovery Channel");
@@ -557,7 +557,8 @@ public final class Backup {
 				chunks.add(chunkTemp);
 			}
 		}
-		// set tiver os chunks todos, reconstroi ficheiro
+
+		// se tiver os chunks todos, reconstroi ficheiro
 		if (file.gotAllChunks())
 			file.dechunker();
 	}
