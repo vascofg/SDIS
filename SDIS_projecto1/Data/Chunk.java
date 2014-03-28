@@ -71,6 +71,8 @@ public class Chunk implements Serializable {
 	}
 
 	public void delete() {
+		if(file==null)
+			return; //chunk já apagado
 		file.delete();
 		file = null;
 		Backup.usedSpace-=size;

@@ -153,7 +153,6 @@ public final class Backup {
 
 		try {
 			loadFiles();
-			loadConfs();
 		} catch (NullPointerException n) {
 			System.out.println("No files to load");
 		}
@@ -164,7 +163,14 @@ public final class Backup {
 			System.out.println("No chunks to load");
 		}
 
+		try {
+			loadConfs();
+		} catch (Exception n) {
+			System.out.println("No config files to load");
+		}
+
 		while (true) {
+			System.out.println("I am ready to receive\n\n");
 			System.out.println("Choose one option\n");
 			System.out.println("1 ------------- Backup File");
 			System.out.println("2 ------------- Restore File");
@@ -206,8 +212,12 @@ public final class Backup {
 				break;
 			case "3":
 				System.out.println("Choose which file to delete");
-				file = selectFile(sc);
-				deleteFile(file);
+				try {
+					file = selectFile(sc);
+					deleteFile(file);
+				} catch (FileNotFoundException e) {
+					System.out.println("File not found!");
+				}
 				break;
 			case "send":
 				Message msg = new Message(new Header("PUTCHUNK", version,
@@ -307,32 +317,28 @@ public final class Backup {
 
 	}
 
-	public static void loadConfs() {
+	public static void loadConfs() throws Exception {
 		java.io.File fi = new java.io.File("confs.rv");
 		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(fi));
-			String line;
-			String[] temp;
-			line = br.readLine();
-			temp = line.split(" ");
-			MCgroup = temp[0];
-			MCport = temp[1];
-			line = br.readLine();
-			temp = line.split(" ");
-			MDBgroup = temp[0];
-			MDBport = temp[1];
-			line = br.readLine();
-			temp = line.split(" ");
-			MDRgroup = temp[0];
-			MDRport = temp[1];
-			line = br.readLine();
-			maxSpace = Integer.parseInt(line);
+		br = new BufferedReader(new FileReader(fi));
+		String line;
+		String[] temp;
+		line = br.readLine();
+		temp = line.split(" ");
+		MCgroup = temp[0];
+		MCport = temp[1];
+		line = br.readLine();
+		temp = line.split(" ");
+		MDBgroup = temp[0];
+		MDBport = temp[1];
+		line = br.readLine();
+		temp = line.split(" ");
+		MDRgroup = temp[0];
+		MDRport = temp[1];
+		line = br.readLine();
+		maxSpace = Integer.parseInt(line);
 
-			br.close();
-		} catch (IOException e) {
-			System.out.println("Conf file not found default settings applied");
-		}
+		br.close();
 
 	}
 
@@ -353,7 +359,7 @@ public final class Backup {
 		for (i = 0; i < files.size(); i++) {
 			System.out.println(i + ": " + files.get(i).getName());
 		}
-		int fileNo = sc.nextInt();
+		int fileNo = Integer.parseInt(sc.nextLine());
 		if (fileNo >= i || fileNo < 0)
 			throw new FileNotFoundException();
 		else
