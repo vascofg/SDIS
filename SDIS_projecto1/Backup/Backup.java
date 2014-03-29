@@ -49,7 +49,10 @@ public final class Backup {
 			java.io.File folder = new java.io.File("files/");
 			FileInputStream fis;
 			ObjectInputStream ois;
-			for (final java.io.File fileEntry : folder.listFiles()) {
+			java.io.File[] filesList = folder.listFiles();
+			if (filesList.length == 0) // pasta vazia
+				throw new NullPointerException(); // mostrar mensagem de aviso
+			for (final java.io.File fileEntry : filesList) {
 				fis = new FileInputStream(fileEntry);
 				ois = new ObjectInputStream(fis);
 				File file = (File) ois.readObject();
@@ -69,10 +72,13 @@ public final class Backup {
 			java.io.File folder = new java.io.File("chunks/");
 			FileInputStream fis;
 			ObjectInputStream ois;
-			for (final java.io.File fileEntry : folder.listFiles()) { // pastas
-																		// para
-																		// cada
-																		// ficheiro
+			java.io.File[] filesList = folder.listFiles();
+			if (filesList.length == 0) // pasta vazia
+				throw new NullPointerException(); // mostrar mensagem de aviso
+			for (final java.io.File fileEntry : filesList) { // pastas
+																// para
+																// cada
+																// ficheiro
 				// filtro para apenas ler ficheiros de serialize
 				FilenameFilter filter = new FilenameFilter() {
 
@@ -207,13 +213,14 @@ public final class Backup {
 			cmd = sc.nextLine();
 
 			switch (cmd) {
+			//TODO: corrigir bugs nos inputs
 			case "1":
 				System.out
 						.println("Write the file name and replication number <Filename> <RepNumber>");
 				cmd = sc.nextLine();
 				data = cmd.split(" ");
 				File file = new File(data[0], Integer.parseInt(data[1]));
-				if (getFileByID(file.getId()) == null) {
+				if (getFileByID(file.getFileID()) == null) {
 					file.chunker();
 					if (usedSpace > maxSpace)
 						System.out
@@ -222,7 +229,8 @@ public final class Backup {
 					addFileChunksToChunkArray(file);
 					sendBackup(file);
 
-				}
+				} else
+					System.out.println("File already in the system!");
 				break;
 			case "2":
 				System.out.println("Choose which file to restore");
@@ -285,10 +293,10 @@ public final class Backup {
 					MDRport = data[1];
 					break;
 				case "4":
-					System.out.println("Espaço actual: " + usedSpace);
-					System.out.println("Espaço máximo: " + maxSpace);
-					System.out.print("Novo espaço máximo: ");
-					maxSpace = sc.nextLong();
+					System.out.println("Used storage: " + usedSpace);
+					System.out.println("Max storage: " + maxSpace);
+					System.out.print("New max storage: ");
+					maxSpace = Long.parseLong(sc.nextLine());
 					reclaimChoice();
 					break;
 
@@ -370,15 +378,22 @@ public final class Backup {
 	}
 
 	public static File selectFile(Scanner sc) throws FileNotFoundException {
-		int i;
-		for (i = 0; i < files.size(); i++) {
-			System.out.println(i + ": " + files.get(i).getName());
+		// TODO: mostrar modification time
+		try {
+			int i;
+			for (i = 0; i < files.size(); i++) {
+				System.out.println(i + ": " + files.get(i).getName());
+			}
+			int fileNo = Integer.parseInt(sc.nextLine());
+
+			if (fileNo >= i || fileNo < 0)
+				throw new FileNotFoundException();
+			else
+				return files.get(fileNo);
+		} catch (NumberFormatException e) {
+			throw new FileNotFoundException(); // se número inválido, atira
+												// filenotfound
 		}
-		int fileNo = Integer.parseInt(sc.nextLine());
-		if (fileNo >= i || fileNo < 0)
-			throw new FileNotFoundException();
-		else
-			return files.get(fileNo);
 	}
 
 	public static void deleteFile(File file) // peer local
@@ -473,6 +488,7 @@ public final class Backup {
 	}
 
 	public static void putChunk(Chunk chunk) {
+		// TODO: permitir aumentar repdeg
 		try {
 			int waitTime = putchunkDelay;
 			Header header = new Header("PUTCHUNK", version, chunk.getFileID(),
@@ -585,11 +601,18 @@ public final class Backup {
 
 	public static void gotChunk(Chunk chunk, byte[] chunkData) {
 		File file = getFileByID(chunk.getFileID());
+		if (file == null) // não foi pedido por este peer
+			return;
 		Chunk chunkTemp = null;
 		for (int i = 0; i < file.getChunks().size(); i++) {
 			chunkTemp = file.getChunks().get(i);
 			if (chunkTemp.getFileID().equals(chunk.getFileID())
 					&& chunkTemp.getChunkNo() == chunk.getChunkNo()) {
+				if (chunkTemp.getFile() != null) // já tem o ficheiro, descarta
+				{
+					System.out.println("Chunk already received, ignoring...");
+					return;
+				}
 				chunkTemp.write(chunkData, chunkData.length);
 				chunks.add(chunkTemp);
 			}

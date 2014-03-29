@@ -74,10 +74,10 @@ public class File implements Serializable {
 		java.io.File file = new java.io.File("files/" + id + ".ser"); // file id
 		file.delete();
 	}
-	
+
 	public Boolean gotAllChunks() {
-		for(final Chunk chunk : getChunks())
-			if(chunk.file==null)
+		for (final Chunk chunk : getChunks())
+			if (chunk.file == null)
 				return false;
 		return true;
 	}
@@ -105,7 +105,6 @@ public class File implements Serializable {
 		int i;
 		Chunk chunk;
 		try {
-			FileInputStream is = new FileInputStream(file);
 			long size = file.length();
 			long numChunks = (long) Math.ceil(size / (float) Chunk.ChunkSize);
 			byte[] data = new byte[Chunk.ChunkSize];
@@ -113,8 +112,12 @@ public class File implements Serializable {
 
 			this.id = getFileID();
 			System.out.println(this.id);
-			is.close();
-			is = new FileInputStream(file); // rewind
+
+			// se ficheiro tinha sido marcado para delete e voltado a fazer
+			// backup, não fazer delete no próximo arranque
+			eraseDeletedFile();
+
+			FileInputStream is = new FileInputStream(file);
 
 			for (i = 0; i < numChunks; i++) {
 				readBytes = is.read(data);
@@ -180,11 +183,11 @@ public class File implements Serializable {
 		}
 
 	}
-	
+
 	public void serializeDeletedFile() {
 		try {
 			java.io.File file = new java.io.File("deletedFiles/" + id + ".ser"); // file
-																			// id
+			// id
 			file.getParentFile().mkdir();
 			file.createNewFile();
 			FileOutputStream os = new FileOutputStream(file);
@@ -200,7 +203,8 @@ public class File implements Serializable {
 	}
 
 	public void eraseDeletedFile() {
-		java.io.File file = new java.io.File("deletedFiles/" + id + ".ser"); // file id
+		java.io.File file = new java.io.File("deletedFiles/" + id + ".ser"); // file
+																				// id
 		file.delete();
 	}
 
