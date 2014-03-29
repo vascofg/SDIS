@@ -45,11 +45,11 @@ public final class Backup {
 																// chunks
 
 	public static void loadFiles() throws NullPointerException {
-		java.io.File folder = new java.io.File("files/");
-		FileInputStream fis;
-		ObjectInputStream ois;
-		for (final java.io.File fileEntry : folder.listFiles()) {
-			try {
+		try {
+			java.io.File folder = new java.io.File("files/");
+			FileInputStream fis;
+			ObjectInputStream ois;
+			for (final java.io.File fileEntry : folder.listFiles()) {
 				fis = new FileInputStream(fileEntry);
 				ois = new ObjectInputStream(fis);
 				File file = (File) ois.readObject();
@@ -57,21 +57,22 @@ public final class Backup {
 				usedSpace += addFileChunksToChunkArray(file);
 				ois.close();
 				fis.close();
-			} catch (IOException | ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (IOException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
 	public static void loadChunks() throws NullPointerException {
-		java.io.File folder = new java.io.File("chunks/");
-		FileInputStream fis;
-		ObjectInputStream ois;
-		for (final java.io.File fileEntry : folder.listFiles()) { // pastas para
-																	// cada
-																	// ficheiro
-			try {
+		try {
+			java.io.File folder = new java.io.File("chunks/");
+			FileInputStream fis;
+			ObjectInputStream ois;
+			for (final java.io.File fileEntry : folder.listFiles()) { // pastas
+																		// para
+																		// cada
+																		// ficheiro
 				// filtro para apenas ler ficheiros de serialize
 				FilenameFilter filter = new FilenameFilter() {
 
@@ -104,19 +105,21 @@ public final class Backup {
 						}
 					}
 				}
-			} catch (IOException | ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (IOException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
+	// delete enchancement (reenvia delete aquando da abertura do programa, para
+	// garantir remoção)
 	public static void resendDelete() {
-		java.io.File folder = new java.io.File("deletedFiles/");
-		FileInputStream fis;
-		ObjectInputStream ois;
-		for (final java.io.File fileEntry : folder.listFiles()) {
-			try {
+		try {
+			java.io.File folder = new java.io.File("deletedFiles/");
+			FileInputStream fis;
+			ObjectInputStream ois;
+			for (final java.io.File fileEntry : folder.listFiles()) {
 				fis = new FileInputStream(fileEntry);
 				ois = new ObjectInputStream(fis);
 				File file = (File) ois.readObject();
@@ -125,12 +128,12 @@ public final class Backup {
 				ois.close();
 				fis.close();
 				fileEntry.delete();
-			} catch (NullPointerException e) {
-				// do nothing
-			} catch (IOException | ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (NullPointerException e) {
+			// do nothing
+		} catch (IOException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

@@ -100,6 +100,9 @@ public class Multicast extends Thread {
 				case "CHUNK":
 					Backup.gotChunk(chunk, msg.getChunkData());
 					break;
+				default:
+					System.out.println("Message type not recognized!");
+					break;
 				}
 			} catch (SocketException e) {
 				// thread interrompida, sair do loop
