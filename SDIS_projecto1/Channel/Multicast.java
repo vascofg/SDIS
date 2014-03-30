@@ -72,14 +72,7 @@ public class Multicast extends Thread {
 						Backup.stored(chunk, msg.getChunkData());
 					break;
 				case "GETCHUNK":
-					if (ignoreChunk != null
-							&& ignoreChunkNo == header.getChunkNo()
-							&& ignoreFileID.equals(header.getFileId()))
-						ignoreChunk = true; // recebeu o chunk que queremos
-											// ignorar (não reenvia CHUNK)
-					else
-						Backup.sendChunk(header.getFileId(),
-								header.getChunkNo());
+					Backup.sendChunk(header.getFileId(), header.getChunkNo());
 					break;
 				case "STORED":
 					// incrementa rep deg do chunk armazenado no peer remoto
@@ -98,7 +91,13 @@ public class Multicast extends Thread {
 					Backup.removed(header.getFileId(), header.getChunkNo());
 					break;
 				case "CHUNK":
-					Backup.gotChunk(chunk, msg.getChunkData());
+					if (ignoreChunk != null
+							&& ignoreChunkNo == header.getChunkNo()
+							&& ignoreFileID.equals(header.getFileId()))
+						ignoreChunk = true; // recebeu o chunk que queremos
+											// ignorar (não reenvia CHUNK)
+					else
+						Backup.gotChunk(chunk, msg.getChunkData());
 					break;
 				default:
 					System.out.println("Message type not recognized!");

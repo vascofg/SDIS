@@ -302,6 +302,7 @@ public final class Backup {
 					System.out.println("Used storage: " + usedSpace);
 					System.out.println("Max storage: " + maxSpace);
 					System.out.print("New max storage: ");
+					//TODO: deu merda
 					maxSpace = Long.parseLong(sc.nextLine());
 					reclaimChoice();
 					break;
@@ -521,6 +522,7 @@ public final class Backup {
 
 	public static void stored(Chunk chunk, byte[] chunkData) { // recebido
 																// putchunk
+		//TODO: null pointer exception
 		if (getChunkByID(chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
 																			// não
 																			// existe
