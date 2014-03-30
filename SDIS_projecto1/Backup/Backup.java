@@ -1,4 +1,5 @@
 //TODO: TESTAR MAIS!
+//TODO: Replication degree 1 é 1 na rede!
 
 package Backup;
 
@@ -32,9 +33,9 @@ public final class Backup {
 	public static String version = "1.0";
 	public static long maxSpace = 256000;
 	public static long usedSpace = 0;
-	public static Multicast MC = new Multicast(MCgroup, MCport);
-	public static Multicast MDB = new Multicast(MDBgroup, MDBport);
-	public static Multicast MDR = new Multicast(MDRgroup, MDRport);
+	public static Multicast MC;
+	public static Multicast MDB;
+	public static Multicast MDR;
 	public static final int putchunkDelay = 500;
 
 	public static List<File> files = new ArrayList<File>(); // ficheiros que
@@ -177,10 +178,6 @@ public final class Backup {
 		Scanner sc = new Scanner(System.in);
 		String data[] = null;
 
-		MC.start();
-		MDB.start();
-		MDR.start();
-
 		try {
 			loadFiles();
 		} catch (NullPointerException n) {
@@ -199,6 +196,14 @@ public final class Backup {
 			System.out.println("No config files to load");
 		}
 
+		MC = new Multicast(MCgroup, MCport);
+		MDB = new Multicast(MDBgroup, MDBport);
+		MDR = new Multicast(MDRgroup, MDRport);
+		
+		MC.start();
+		MDB.start();
+		MDR.start();
+		
 		resendDelete();
 
 		while (true) {
@@ -278,6 +283,7 @@ public final class Backup {
 							.println("Insert Group IP and Port <group> <Port>");
 					String cenas = sc.nextLine();
 					data = cenas.split(" ");
+					System.out.println("Restart the application to apply the changes");
 				}
 				switch (cmd) {
 				case "1":
@@ -608,7 +614,8 @@ public final class Backup {
 			chunkTemp = file.getChunks().get(i);
 			if (chunkTemp.getFileID().equals(chunk.getFileID())
 					&& chunkTemp.getChunkNo() == chunk.getChunkNo()) {
-				if (chunkTemp.getFile() != null) // já tem o ficheiro, descarta
+				//TODO: não deveria ser necessário. TESTAR
+				if (chunkTemp.getFile() != null) // já tem o chunk, descarta
 				{
 					System.out.println("Chunk already received, ignoring...");
 					return;
