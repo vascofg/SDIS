@@ -49,6 +49,7 @@ public class MouseDeltaThread extends Thread {
 		this.deltaX += x;
 		this.deltaY += y;
 		update = true;
+		notify();
 	}
 
 	public void setAddrPort(InetAddress address, int port) {
