@@ -6,9 +6,9 @@ import java.net.InetAddress;
 
 public class MouseDeltaThread extends Thread {
 	private boolean go = true, update = false, threadSuspended = false;
-	int deltaX, deltaY, port;
-	DatagramSocket socket;
-	InetAddress address;
+	private int deltaX, deltaY, port;
+	private DatagramSocket socket;
+	private InetAddress address;
 
 	public MouseDeltaThread(DatagramSocket socket, InetAddress address) {
 		this.socket = socket;
@@ -45,27 +45,27 @@ public class MouseDeltaThread extends Thread {
 		System.out.println("Mouse thread ending...");
 	}
 
-	void setPos(int x, int y) {
+	public synchronized void setPos(int x, int y) {
 		this.deltaX += x;
 		this.deltaY += y;
 		update = true;
 	}
 
-	void setAddrPort(InetAddress address, int port) {
+	public void setAddrPort(InetAddress address, int port) {
 		this.address = address;
 		this.port = port;
 	}
 
 	@Override
-	public void interrupt() {
+	public synchronized void interrupt() {
 		this.go = false;
 	}
 	
-	public void pause(){
+	public synchronized void pause(){
 		this.threadSuspended = true;
 	}
 	
-	public void unpause(){
+	public synchronized void unpause(){
 		this.threadSuspended = false;
 		notify();
 	}

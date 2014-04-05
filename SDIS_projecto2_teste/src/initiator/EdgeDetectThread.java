@@ -7,8 +7,8 @@ import java.awt.Toolkit;
 public class EdgeDetectThread extends Thread {
 
 	private boolean go = true, threadSuspended = false;
-	Point currentPos;
-	Point maxPos;
+	private Point currentPos;
+	private Point maxPos;
 
 	public EdgeDetectThread() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -51,15 +51,15 @@ public class EdgeDetectThread extends Thread {
 	}
 	
 	@Override
-	public void interrupt() {
+	public synchronized void interrupt() {
 		this.go = false;
 	}
 	
-	public void pause(){
+	public synchronized void pause(){
 		this.threadSuspended = true;
 	}
 	
-	public void unpause(){
+	public synchronized void unpause(){
 		this.threadSuspended = false;
 		notify();
 	}
