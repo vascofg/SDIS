@@ -52,13 +52,14 @@ public class Unicast extends Thread {
 
 				String messageType = header.getMessageType();
 
-				System.out.println("received   " + header.toString());
+				System.out.println("received   " + header.toString() + " from unicast");
 
 				switch (messageType) {
 				case "STORED":
 					wasStored = true;
+					break;
 				case "CHUNK":
-					Backup.gotChunk(chunk, msg.getChunkData(), true);
+					Backup.gotChunk(chunk, msg.getChunkData(), messagePacket.getAddress());
 					break;
 				default:
 					System.out.println("Message type not recognized!");
@@ -80,7 +81,7 @@ public class Unicast extends Thread {
 
 		try {
 			unicast_socket.send(controlMessagePacket);
-			System.out.println("sent   " + message.getHeader().toString());
+			System.out.println("sent   " + message.getHeader().toString()  + " by unicast");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

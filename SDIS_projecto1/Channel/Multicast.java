@@ -94,7 +94,7 @@ public class Multicast extends Thread {
 						ignoreChunk = true; // recebeu o chunk que queremos
 											// ignorar (não reenvia CHUNK)
 					else
-						Backup.gotChunk(chunk, msg.getChunkData(), false);
+						Backup.gotChunk(chunk, msg.getChunkData(), null);
 					break;
 				default:
 					System.out.println("Message type not recognized!");

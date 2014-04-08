@@ -1,6 +1,3 @@
-//TODO: TESTAR MAIS!
-//TODO: Replication degree 1 é 1 na rede!
-
 package Backup;
 
 import java.io.BufferedReader;
@@ -67,7 +64,6 @@ public final class Backup {
 				fis.close();
 			}
 		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -118,7 +114,6 @@ public final class Backup {
 				}
 			}
 		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -143,7 +138,6 @@ public final class Backup {
 		} catch (NullPointerException e) {
 			// do nothing
 		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -203,13 +197,14 @@ public final class Backup {
 		MC = new Multicast(MCgroup, MCport);
 		MDB = new Multicast(MDBgroup, MDBport);
 		MDR = new Multicast(MDRgroup, MDRport);
-		
-		//open unicast socket for restore enhancement
+
+		// open unicast socket for restore enhancement
 		MDR_unicast = new Unicast(MDR_unicast_port);
 
 		MC.start();
 		MDB.start();
 		MDR.start();
+		MDR_unicast.start();
 
 		resendDelete();
 
@@ -225,14 +220,13 @@ public final class Backup {
 			cmd = sc.nextLine();
 
 			switch (cmd) {
-			// TODO: corrigir bugs nos inputs
+
 			case "1":
 				System.out
 						.println("Write the file name and replication number <Filename> <RepNumber>");
 				cmd = sc.nextLine();
 				data = cmd.split(" ");
-				// TODO: ficheiro não existe (exception)
-				// TODO: NOMES COM ESPAÇOS
+
 				File file = new File(data[0], Integer.parseInt(data[1]));
 				if (getFileByID(file.getFileID()) == null) {
 					file.chunker();
@@ -312,7 +306,6 @@ public final class Backup {
 					System.out.println("Used storage: " + usedSpace);
 					System.out.println("Max storage: " + maxSpace);
 					System.out.print("New max storage: ");
-					// TODO: deu merda
 					maxSpace = Long.parseLong(sc.nextLine());
 					reclaimChoice();
 					break;
@@ -329,6 +322,7 @@ public final class Backup {
 				MC.interrupt();
 				MDB.interrupt();
 				MDR.interrupt();
+				MDR_unicast.interrupt();
 				saveFiles();
 				saveChunks();
 				saveConfs();
@@ -351,7 +345,6 @@ public final class Backup {
 			out.println(maxSpace);
 			out.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -395,7 +388,6 @@ public final class Backup {
 	}
 
 	public static File selectFile(Scanner sc) throws FileNotFoundException {
-		// TODO: mostrar modification time
 		try {
 			int i;
 			for (i = 0; i < files.size(); i++) {
@@ -505,7 +497,7 @@ public final class Backup {
 	}
 
 	public static void putChunk(Chunk chunk) {
-		// TODO: permitir aumentar repdeg
+
 		try {
 			int waitTime = putchunkDelay;
 			Header header = new Header("PUTCHUNK", version, chunk.getFileID(),
@@ -516,7 +508,6 @@ public final class Backup {
 				MDB.send(message);
 				System.out.println("Waiting for stored messages...");
 				Thread.sleep(waitTime);
-				// TODO: interromper sleep se receber entretanto
 				waitTime *= 2; // duplica tempo de espera
 				if (chunk.getCurrentReplicationDeg() >= chunk
 						.getReplicationDeg())
@@ -532,7 +523,7 @@ public final class Backup {
 
 	public static void stored(Chunk chunk, byte[] chunkData) { // recebido
 																// putchunk
-		// TODO: null pointer exception
+
 		if (getChunkByID(chunk.getFileID(), chunk.getChunkNo()) == null) // ainda
 																			// não
 																			// existe
@@ -543,7 +534,6 @@ public final class Backup {
 				try {
 					Thread.sleep(Math.round(Math.random() * 400));
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if (chunk.getCurrentReplicationDeg() < chunk
@@ -565,7 +555,8 @@ public final class Backup {
 			System.out.println("Chunk already stored!");
 	}
 
-	public static void sendChunk(String fileId, Integer chunkNo, InetAddress unicast_address) {
+	public static void sendChunk(String fileId, Integer chunkNo,
+			InetAddress unicast_address) {
 
 		try {
 			Chunk chunk = getChunkByID(fileId, chunkNo);
@@ -575,27 +566,38 @@ public final class Backup {
 						chunk.getChunkNo(), null);
 				Message message = new Message(header, chunk);
 				MDR_unicast.setAddress(unicast_address);
-				MDR_unicast.wasStored=false; //reset flag
-				MDR_unicast.send(message); // enhancement
-				Thread.sleep(putchunkDelay);
-				if (!MDR_unicast.wasStored) // enhancement não implementado pelo
-											// outro peer
+				MDR_unicast.wasStored = false; // reset flag
+				MDR.ignoreChunk = false;
+				MDR.ignoreChunkNo = chunk.getChunkNo();
+				MDR.ignoreFileID = chunk.getFileID();
+				Thread.sleep(Math.round(Math.random() * 400));
+				if (MDR.ignoreChunk == false) // ñ recebeu entretanto
+				// CHUNK com o mm fileID
+				// / chunkNo
 				{
-					MDR.ignoreChunk = false;
-					MDR.ignoreChunkNo = chunk.getChunkNo();
-					MDR.ignoreFileID = chunk.getFileID();
-					Thread.sleep(Math.round(Math.random() * 400));
-					if (MDR.ignoreChunk == false) // ñ recebeu entretanto
-						// CHUNK com o mm fileID
-						// / chunkNo
-						MDR.send(message);
+					MDR_unicast.send(message); // enhancement
+					Thread.sleep(putchunkDelay);
+					if (!MDR_unicast.wasStored) // enhancement não implementado
+												// pelo
+					// outro peer
+					{
+						if (MDR.ignoreChunk == false) // ñ recebeu entretanto
+							// CHUNK com o mm fileID
+							// / chunkNo
+							MDR.send(message);
 
-					MDR.ignoreChunk = null;
-					MDR.ignoreChunkNo = null;
-					MDR.ignoreFileID = null;
+						MDR.ignoreChunk = null;
+						MDR.ignoreChunkNo = null;
+						MDR.ignoreFileID = null;
+					} else
+					{
+						System.out.println("Sent by unicast successfuly");
+						message = new Message(header, null);
+						MDR.send(message);
+						//mandar chunk vazio (para os outros não enviarem)
+					}
 				}
-				else
-					System.out.println("Sent by unicast");
+
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -627,7 +629,8 @@ public final class Backup {
 		MC.send(message);
 	}
 
-	public static void gotChunk(Chunk chunk, byte[] chunkData, boolean unicast_channel) {
+	public static void gotChunk(Chunk chunk, byte[] chunkData,
+			InetAddress unicast_address) {
 		File file = getFileByID(chunk.getFileID());
 		if (file == null) // não foi pedido por este peer
 			return;
@@ -636,12 +639,22 @@ public final class Backup {
 			chunkTemp = file.getChunks().get(i);
 			if (chunkTemp.getFileID().equals(chunk.getFileID())
 					&& chunkTemp.getChunkNo() == chunk.getChunkNo()) {
-				if(unicast_channel) //se veio pelo unicast (enhancement)
+				if (chunkTemp.getFile() != null) // já recebeu entretanto
+													// (provavelmente por
+													// unicast)
+				{
+					System.out
+							.println("Duplicate chunk received. Discarding...");
+					return;
+				}
+				if (unicast_address != null) // se veio pelo unicast
+												// (enhancement)
 				{
 					System.out.println("Got the chunk from unicast");
 					Header header = new Header("STORED", version,
 							chunk.getFileID(), chunk.getChunkNo(), null);
 					Message message = new Message(header, null);
+					MDR_unicast.setAddress(unicast_address);
 					MDR_unicast.send(message);
 				}
 				chunkTemp.write(chunkData, chunkData.length);
