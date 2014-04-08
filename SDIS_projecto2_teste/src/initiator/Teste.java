@@ -1,4 +1,5 @@
 package initiator;
+
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -25,6 +26,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 public class Teste {
 
@@ -44,10 +46,12 @@ public class Teste {
 	static EdgeDetectThread edgeThread;
 
 	static InetAddress address;
-	static final String addressName = "192.168.108.61";
+	static String addressName;
 	static final int port = 44444;
 
 	public static void main(String[] args) throws AWTException {
+		addressName = JOptionPane
+				.showInputDialog("Input IP address:");
 		r = new Robot();
 
 		try {
@@ -78,8 +82,8 @@ public class Teste {
 
 		edgeThread = new EdgeDetectThread();
 		edgeThread.start();
-		
-		mouseThread = new MouseDeltaThread(socket, address);
+
+		mouseThread = new MouseDeltaThread(socket, address, port);
 		mouseThread.pause();
 		mouseThread.start();
 
@@ -291,17 +295,17 @@ public class Teste {
 		enableWindow();
 		mouseThread.unpause();
 	}
-	
+
 	static void enableWindow() {
 		frame.setVisible(true);
-		//recalculate center points
+		// recalculate center points
 		relativeCenterX = frame.getSize().width / 2;
 		relativeCenterY = frame.getSize().height / 2;
 		absoluteCenterX = relativeCenterX + frame.getLocation().x;
 		absoluteCenterY = relativeCenterY + frame.getLocation().y;
-		//move to center
+		// move to center
 		r.mouseMove(absoluteCenterX, absoluteCenterY);
-		//click to grab focus
+		// click to grab focus
 		r.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 		r.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 	}

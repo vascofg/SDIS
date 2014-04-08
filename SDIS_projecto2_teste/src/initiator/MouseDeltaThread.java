@@ -10,9 +10,10 @@ public class MouseDeltaThread extends Thread {
 	private DatagramSocket socket;
 	private InetAddress address;
 
-	public MouseDeltaThread(DatagramSocket socket, InetAddress address) {
+	public MouseDeltaThread(DatagramSocket socket, InetAddress address, int port) {
 		this.socket = socket;
 		this.address = address;
+		this.port = port;
 	}
 
 	@Override
