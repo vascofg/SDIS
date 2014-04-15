@@ -75,4 +75,9 @@ public class Receiver {
 			}
 		}
 	}
+
+	public static void onEdge(short edge) {
+		// TODO Auto-generated method stub
+		
+	}
 }

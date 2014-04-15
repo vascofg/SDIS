@@ -4,13 +4,18 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
 
-public class EdgeDetectThread extends Thread {
+public class EdgeDetect extends Thread {
 
 	private boolean go = true, threadSuspended = false;
 	private Point currentPos;
 	private Point maxPos;
+	
+	public static final short EDGE_LEFT = 1;
+	public static final short EDGE_RIGHT = 2;
+	public static final short EDGE_TOP = 3;
+	public static final short EDGE_BOTTOM = 4;
 
-	public EdgeDetectThread() {
+	public EdgeDetect() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		maxPos = new Point(screenSize.width - 1, screenSize.height - 1); // position
 																			// is
@@ -39,7 +44,7 @@ public class EdgeDetectThread extends Thread {
 				System.out.println("EDGE DETECT: LEFT");
 			else if (currentPos.x == maxPos.x) {
 				System.out.println("EDGE DETECT: RIGHT");
-				Teste.onEdge();
+				Teste.onEdge(EDGE_RIGHT);
 			}
 			if (currentPos.y == 0)
 				System.out.println("EDGE DETECT: TOP");
