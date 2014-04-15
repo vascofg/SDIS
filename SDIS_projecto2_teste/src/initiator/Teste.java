@@ -92,7 +92,7 @@ public class Teste {
 		frame.addMouseWheelListener(eventListener.wheelListener);
 	}
 
-	static void onEdge(short edge) {
+	static void onEdge(byte edge) {
 		//EdgeDetect.EDGE_RIGHT
 		edgeThread.pause();
 		enableWindow();

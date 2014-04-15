@@ -10,10 +10,10 @@ public class EdgeDetect extends Thread {
 	private Point currentPos;
 	private Point maxPos;
 	
-	public static final short EDGE_LEFT = 1;
-	public static final short EDGE_RIGHT = 2;
-	public static final short EDGE_TOP = 3;
-	public static final short EDGE_BOTTOM = 4;
+	public static final byte EDGE_LEFT = 1;
+	public static final byte EDGE_RIGHT = 2;
+	public static final byte EDGE_TOP = 3;
+	public static final byte EDGE_BOTTOM = 4;
 
 	public EdgeDetect() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

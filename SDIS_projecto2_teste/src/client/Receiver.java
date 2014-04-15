@@ -76,7 +76,7 @@ public class Receiver {
 		}
 	}
 
-	public static void onEdge(short edge) {
+	public static void onEdge(byte edge) {
 		// TODO Auto-generated method stub
 		
 	}
