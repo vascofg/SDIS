@@ -1,4 +1,5 @@
 package client;
+
 import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -9,7 +10,7 @@ public class EdgeDetect extends Thread {
 	private boolean go = true, threadSuspended = false;
 	private Point currentPos;
 	private Point maxPos;
-	
+
 	public static final byte EDGE_LEFT = 1;
 	public static final byte EDGE_RIGHT = 2;
 	public static final byte EDGE_TOP = 3;
@@ -33,10 +34,10 @@ public class EdgeDetect extends Thread {
 		while (go) {
 			try {
 				Thread.sleep(100);
-				synchronized(this) {
-                    while (threadSuspended)
-                        wait();
-                }
+				synchronized (this) {
+					while (threadSuspended)
+						wait();
+				}
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();
@@ -54,17 +55,17 @@ public class EdgeDetect extends Thread {
 		}
 		System.out.println("Edge thread ending...");
 	}
-	
+
 	@Override
 	public synchronized void interrupt() {
 		this.go = false;
 	}
-	
-	public synchronized void pause(){
+
+	public synchronized void pause() {
 		this.threadSuspended = true;
 	}
-	
-	public synchronized void unpause(){
+
+	public synchronized void unpause() {
 		this.threadSuspended = false;
 		notify();
 	}

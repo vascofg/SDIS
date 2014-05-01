@@ -7,7 +7,6 @@ import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.Window.Type;
-import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -32,19 +31,20 @@ public class Teste {
 	static DatagramSocket socket;
 	static DatagramPacket packet;
 
-	static MouseDeltaThread mouseThread;
 	static EdgeDetect edgeThread;
-	
-	static EventListener eventListener;
+
 	static EventHandler eventHandler;
+
+	static MessageSender messageSender;
 
 	static InetAddress address;
 	static String addressName;
 	static final int port = 44444;
 
+	static short messageDelay = 25; // delay to send messages (in milliseconds)
+
 	public static void main(String[] args) throws AWTException {
-		addressName = JOptionPane
-				.showInputDialog("Input IP address:");
+		addressName = JOptionPane.showInputDialog("Input IP address:");
 		r = new Robot();
 
 		try {
@@ -70,33 +70,29 @@ public class Teste {
 		frame.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
 		frame.setType(Type.UTILITY);
 		frame.getContentPane().setCursor(blankCursor);
-		//frame.setAlwaysOnTop(true);
+		frame.setAlwaysOnTop(true);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		// frame.setVisible(true);
+		frame.setFocusTraversalKeysEnabled(false); // allow capture of tab key
 
 		edgeThread = new EdgeDetect();
 		edgeThread.start();
 
-		mouseThread = new MouseDeltaThread(socket, address, port);
-		mouseThread.pause();
-		mouseThread.start();
-		
-		eventListener = new EventListener();
 		eventHandler = new EventHandler();
-		
 		eventHandler.start();
 
-		frame.addMouseListener(eventListener.mouseListener);
-		frame.addMouseMotionListener(eventListener.motionListener);
-		frame.addKeyListener(eventListener.keyListener);
-		frame.addMouseWheelListener(eventListener.wheelListener);
+		messageSender = new MessageSender();
+		messageSender.start();
+
+		frame.addMouseListener(EventListener.mouseAdapter);
+		frame.addMouseMotionListener(EventListener.mouseAdapter);
+		frame.addMouseWheelListener(EventListener.mouseAdapter);
+		frame.addKeyListener(EventListener.keyAdapter);
 	}
 
 	static void onEdge(byte edge) {
-		//EdgeDetect.EDGE_RIGHT
+		// EdgeDetect.EDGE_RIGHT
 		edgeThread.pause();
 		enableWindow();
-		mouseThread.unpause();
 	}
 
 	static void enableWindow() {
@@ -109,7 +105,7 @@ public class Teste {
 		// move to center
 		r.mouseMove(absoluteCenterX, absoluteCenterY);
 		// click to grab focus
-		r.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-		r.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		//r.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+		//r.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 	}
 }
