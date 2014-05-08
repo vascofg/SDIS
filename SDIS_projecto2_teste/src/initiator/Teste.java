@@ -1,5 +1,7 @@
 package initiator;
 
+import gui.Gui;
+
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -16,6 +18,8 @@ import java.net.UnknownHostException;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
+import message.Message;
 
 public class Teste {
 
@@ -36,25 +40,37 @@ public class Teste {
 	static EventHandler eventHandler;
 
 	static MessageSender messageSender;
+	
+	static MessageListener messageListener;
+	
+	static Control control;
 
 	static InetAddress address;
 	static String addressName;
 	static final int port = 44444;
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
-
-	public static void main(String[] args) throws AWTException {
+	
+	public static void connect()
+	{
 		addressName = JOptionPane.showInputDialog("Input IP address:");
-		r = new Robot();
-
 		try {
-			socket = new DatagramSocket();
+			socket = new DatagramSocket(port);
 			address = InetAddress.getByName(addressName);
+			
+			Teste.messageSender.addMessage(new Message(Message.CONNECT));
+			//TODO: verificar timeout
 		} catch (SocketException | UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+	}
 
+	public static void main(String[] args) throws AWTException {
+		//Gui gui = new Gui();
+		//gui.init();
+		r = new Robot();
+		
 		// Transparent 16 x 16 pixel cursor image.
 		BufferedImage cursorImg = new BufferedImage(16, 16,
 				BufferedImage.TYPE_INT_ARGB);
@@ -81,7 +97,16 @@ public class Teste {
 		eventHandler.start();
 
 		messageSender = new MessageSender();
+		
+		messageListener = new MessageListener();
+		
+		control = new Control();
+		control.start();
+		
+		connect();
+		
 		messageSender.start();
+		messageListener.start();
 
 		frame.addMouseListener(EventListener.mouseAdapter);
 		frame.addMouseMotionListener(EventListener.mouseAdapter);

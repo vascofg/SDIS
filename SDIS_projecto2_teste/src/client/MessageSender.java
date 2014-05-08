@@ -1,4 +1,4 @@
-package initiator;
+package client;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -23,22 +23,16 @@ public class MessageSender extends Thread {
 		DatagramPacket packet;
 		while (go) {
 			try {
-				Thread.sleep(Teste.messageDelay);
 				messageList.add(messageQueue.take()); // espera até ter algum
 														// elemento
 				messageQueue.drainTo(messageList); // retira os restantes
 													// elementos
-				try {
-					messageList.add(new Message(Teste.eventHandler.getMouseDelta()));
-				} catch (Exception e) {
-				} // adiciona movimento do rato (se for 0, atira excepção e não
-					// faz nada)
 
 				bytes = Message.getPacket(messageList);
-				packet = new DatagramPacket(bytes, bytes.length, Teste.address,
-						Teste.port);
+				packet = new DatagramPacket(bytes, bytes.length,
+						Receiver.initiatorAddress, Receiver.port);
 				try {
-					Teste.socket.send(packet);
+					Receiver.socket.send(packet);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

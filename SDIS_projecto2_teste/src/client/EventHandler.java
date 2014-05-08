@@ -5,7 +5,7 @@ import java.awt.Point;
 import java.util.Collection;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import initiator.Message;
+import message.Message;
 
 public class EventHandler extends Thread {
 	private boolean go = true;
@@ -58,6 +58,20 @@ public class EventHandler extends Thread {
 					argument = msg.getKeyCode();
 					Receiver.r.keyRelease(argument);
 					break;
+				case Message.CONNECT:
+					Receiver.initiatorAddress = msg.getAddress();
+					Receiver.messageSender.addMessage(new Message(
+							Message.RESOLUTION));
+					break;
+				case Message.DISCONNECT:
+					// TODO: mandar saír
+					break;
+				case Message.ALIVE:
+					Receiver.messageSender
+							.addMessage(new Message(Message.ALIVE));
+					break;
+				default:
+					System.out.println("Got unexpected message: " + msg.getType());
 				}
 			} catch (InterruptedException e) {
 			}

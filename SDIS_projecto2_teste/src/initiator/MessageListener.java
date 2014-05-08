@@ -1,4 +1,4 @@
-package client;
+package initiator;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,15 +18,20 @@ public class MessageListener extends Thread {
 	public void run() {
 		byte[] buf = new byte[256]; // TODO: definir tamanho máximo da mensagem
 		DatagramPacket packet = new DatagramPacket(buf, buf.length);
-		LinkedList<Message> messages = new LinkedList<>();
+		LinkedList<Message> eventMessages = new LinkedList<>();
+		LinkedList<Message> controlMessages = new LinkedList<>();
 		while (go) {
 			try {
-				Receiver.socket.receive(packet);
+				Teste.socket.receive(packet);
 				Message.decodePacket(packet.getData(), packet.getLength(),
-						messages, messages, packet.getAddress()); // não há separação (as duas
+						eventMessages, controlMessages, packet.getAddress()); // não há separação (as duas
 												// tratadas pelo event handler)
-				Receiver.eventHandler.addMessages(messages);
-				messages.clear();
+				if(eventMessages.size()>0)
+				{
+					System.out.println("Got event message! WTH?");
+					eventMessages.clear();
+				}
+				Teste.control.handleMessages(controlMessages);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

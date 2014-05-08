@@ -6,6 +6,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import message.Message;
+
 public class EventHandler extends Thread {
 	private boolean go = true;
 	private LinkedBlockingQueue<InputEvent> eventQueue;

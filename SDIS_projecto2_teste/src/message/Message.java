@@ -1,11 +1,14 @@
-package initiator;
+package message;
 
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.ByteArrayOutputStream;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,13 +28,24 @@ public class Message {
 	public static final byte RESOLUTION = 10;
 	public static final byte ALIVE = 11;
 	public static final byte FLAG = -1; // 0xFF
+	// TODO: Remover flag
 
 	private static final byte AVERAGE_NO_BYTES = 6; // número previsto médio de
 													// bytes por msg
 
 	private List<Byte> bytes;
+	private InetAddress address;
 
-	private static short getMessageLength(byte msgType) { //obtém tamanho da mensagem por tipo
+	public InetAddress getAddress() {
+		return address;
+	}
+
+	public void setAddress(InetAddress address) {
+		this.address = address;
+	}
+
+	private static short getMessageLength(byte msgType) { // obtém tamanho da
+															// mensagem por tipo
 		switch (msgType) {
 		case MOUSE_MOVE:
 		case RESOLUTION:
@@ -56,7 +70,6 @@ public class Message {
 	public Message(InputEvent event) { // constructor para mensagens de eventos
 		this.bytes = new LinkedList<Byte>();
 		switch (event.getID()) {
-		// TODO: completar
 		case MouseEvent.MOUSE_PRESSED:
 			bytes.add(Message.MOUSE_PRESS);
 			bytes.addAll(intToByteList(InputEvent
@@ -94,7 +107,17 @@ public class Message {
 
 	public Message(byte messageType) { // constructor para mensagens de controlo
 		this.bytes = new LinkedList<Byte>();
-		// TODO: completar
+		bytes.add(messageType);
+		switch (messageType) {
+		case EDGE:
+			break;
+		case RESOLUTION:
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			bytes.addAll(intToByteList(dim.width, 2));
+			bytes.addAll(intToByteList(dim.height, 2));
+			break;
+		}
+		bytes.add(FLAG);
 	}
 
 	public Message(List<Byte> bytes) {
@@ -109,6 +132,19 @@ public class Message {
 		bytes.addAll(intToByteList(p.x, 2)); // x
 		bytes.addAll(intToByteList(p.y, 2)); // y
 		bytes.add(Message.FLAG);
+	}
+
+	public boolean isControl() {
+		switch (getType()) {
+		case EDGE:
+		case CONNECT:
+		case RESOLUTION:
+		case DISCONNECT:
+		case ALIVE:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	// Só guarda valores negativos até - 2^(size*7)
@@ -184,6 +220,27 @@ public class Message {
 		int keyCode = byteArrayToUnsignedInt(bytes);
 		return keyCode;
 	}
+	
+	public Dimension getResolution() {
+		byte[] bytes = new byte[2];
+		Dimension dim = new Dimension();
+		Iterator<Byte> t = this.bytes.listIterator(1);
+		bytes[0] = (byte) t.next();
+		bytes[1] = (byte) t.next();
+		dim.width = byteArrayToSignedInt(bytes);
+		bytes[0] = (byte) t.next();
+		bytes[1] = (byte) t.next();
+		dim.height = byteArrayToSignedInt(bytes);
+		return dim;
+	}
+	
+	public int getEdge() {
+		byte[] bytes = new byte[1];
+		Iterator<Byte> t = this.bytes.listIterator(1);
+		bytes[0] = (byte) t.next();
+		int edge = byteArrayToSignedInt(bytes);
+		return edge;
+	}
 
 	public static byte[] getPacket(List<Message> messages) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(messages.size()
@@ -197,17 +254,26 @@ public class Message {
 		return bos.toByteArray();
 	}
 
-	public static List<Message> decodePacket(byte[] bytes, int len) {
-		List<Message> messages = new LinkedList<>();
+	public static void decodePacket(byte[] bytes, int len,
+			List<Message> eventMessages, List<Message> controlMessages, InetAddress address) {
+		Message currentMessage;
 		List<Byte> messageBytes = new LinkedList<>();
 		int i = 0, msgLen;
 		while (i < len) {
 			msgLen = Message.getMessageLength(bytes[i]);
 			for (int j = 0; j < msgLen; j++)
 				messageBytes.add(bytes[i++]);
-			messages.add(new Message(messageBytes));
+			
+			currentMessage = new Message(messageBytes);
+			if(currentMessage.isControl())
+			{
+				//guarda peer de onde veio
+				currentMessage.setAddress(address);
+				controlMessages.add(currentMessage);
+			}
+			else
+				eventMessages.add(currentMessage);
 			messageBytes.clear();
 		}
-		return messages;
 	}
 }
