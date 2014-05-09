@@ -35,39 +35,39 @@ public class EventHandler extends Thread {
 				case Message.MOUSE_MOVE:
 					mouseDelta = msg.getMouseDelta();
 					currentPos = MouseInfo.getPointerInfo().getLocation();
-					Receiver.r.mouseMove(currentPos.x + mouseDelta.x,
+					Client.r.mouseMove(currentPos.x + mouseDelta.x,
 							currentPos.y + mouseDelta.y);
 					break;
 				case Message.MOUSE_PRESS:
 					argument = msg.getMouseButtons();
-					Receiver.r.mousePress(argument);
+					Client.r.mousePress(argument);
 					break;
 				case Message.MOUSE_RELEASE:
 					argument = msg.getMouseButtons();
-					Receiver.r.mouseRelease(argument);
+					Client.r.mouseRelease(argument);
 					break;
 				case Message.MOUSE_SCROLL:
 					argument = msg.getMouseScroll();
-					Receiver.r.mouseWheel(argument);
+					Client.r.mouseWheel(argument);
 					break;
 				case Message.KEY_PRESS:
 					argument = msg.getKeyCode();
-					Receiver.r.keyPress(argument);
+					Client.r.keyPress(argument);
 					break;
 				case Message.KEY_RELEASE:
 					argument = msg.getKeyCode();
-					Receiver.r.keyRelease(argument);
+					Client.r.keyRelease(argument);
 					break;
 				case Message.CONNECT:
-					Receiver.initiatorAddress = msg.getAddress();
-					Receiver.messageSender.addMessage(new Message(
+					Client.initiatorAddress = msg.getAddress();
+					Client.messageSender.addMessage(new Message(
 							Message.RESOLUTION));
 					break;
 				case Message.DISCONNECT:
 					// TODO: mandar saír
 					break;
 				case Message.ALIVE:
-					Receiver.messageSender
+					Client.messageSender
 							.addMessage(new Message(Message.ALIVE));
 					break;
 				default:

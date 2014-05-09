@@ -45,7 +45,7 @@ public class EdgeDetect extends Thread {
 				System.out.println("EDGE DETECT: LEFT");
 			else if (currentPos.x == maxPos.x) {
 				System.out.println("EDGE DETECT: RIGHT");
-				Receiver.onEdge(EDGE_RIGHT);
+				Client.onEdge(EDGE_RIGHT);
 			}
 			if (currentPos.y == 0)
 				System.out.println("EDGE DETECT: TOP");

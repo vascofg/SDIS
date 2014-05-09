@@ -23,22 +23,22 @@ public class MessageSender extends Thread {
 		DatagramPacket packet;
 		while (go) {
 			try {
-				Thread.sleep(Teste.messageDelay);
+				Thread.sleep(Initiator.messageDelay);
 				messageList.add(messageQueue.take()); // espera até ter algum
 														// elemento
 				messageQueue.drainTo(messageList); // retira os restantes
 													// elementos
 				try {
-					messageList.add(new Message(Teste.eventHandler.getMouseDelta()));
+					messageList.add(new Message(Initiator.eventHandler.getMouseDelta()));
 				} catch (Exception e) {
 				} // adiciona movimento do rato (se for 0, atira excepção e não
 					// faz nada)
 
 				bytes = Message.getPacket(messageList);
-				packet = new DatagramPacket(bytes, bytes.length, Teste.address,
-						Teste.port);
+				packet = new DatagramPacket(bytes, bytes.length, Initiator.address,
+						Initiator.port);
 				try {
-					Teste.socket.send(packet);
+					Initiator.socket.send(packet);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

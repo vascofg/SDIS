@@ -7,7 +7,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-public class Receiver {
+public class Client {
 	static DatagramSocket socket;
 	static DatagramPacket packet;
 	static InetAddress initiatorAddress;

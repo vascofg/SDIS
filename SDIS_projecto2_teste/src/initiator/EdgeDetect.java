@@ -1,4 +1,5 @@
 package initiator;
+
 import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -9,7 +10,7 @@ public class EdgeDetect extends Thread {
 	private boolean go = true, threadSuspended = false;
 	private Point currentPos;
 	private Point maxPos;
-	
+
 	public static final byte EDGE_LEFT = 1;
 	public static final byte EDGE_RIGHT = 2;
 	public static final byte EDGE_TOP = 3;
@@ -33,38 +34,42 @@ public class EdgeDetect extends Thread {
 		while (go) {
 			try {
 				Thread.sleep(100);
-				synchronized(this) {
-                    while (threadSuspended)
-                        wait();
-                }
+				synchronized (this) {
+					while (threadSuspended)
+						wait();
+				}
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();
-			if (currentPos.x == 0)
+			if (currentPos.x == 0) {
 				System.out.println("EDGE DETECT: LEFT");
-			else if (currentPos.x == maxPos.x) {
+				Initiator.onEdge(EDGE_LEFT);
+			} else if (currentPos.x == maxPos.x) {
 				System.out.println("EDGE DETECT: RIGHT");
-				Teste.onEdge(EDGE_RIGHT);
+				Initiator.onEdge(EDGE_RIGHT);
 			}
-			if (currentPos.y == 0)
+			if (currentPos.y == 0) {
 				System.out.println("EDGE DETECT: TOP");
-			else if (currentPos.y == maxPos.y)
+				Initiator.onEdge(EDGE_TOP);
+			} else if (currentPos.y == maxPos.y) {
 				System.out.println("EDGE DETECT: BOTTOM");
+				Initiator.onEdge(EDGE_BOTTOM);
+			}
 
 		}
 		System.out.println("Edge thread ending...");
 	}
-	
+
 	@Override
 	public synchronized void interrupt() {
 		this.go = false;
 	}
-	
-	public synchronized void pause(){
+
+	public synchronized void pause() {
 		this.threadSuspended = true;
 	}
-	
-	public synchronized void unpause(){
+
+	public synchronized void unpause() {
 		this.threadSuspended = false;
 		notify();
 	}

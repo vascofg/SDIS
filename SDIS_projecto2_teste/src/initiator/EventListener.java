@@ -14,14 +14,14 @@ public class EventListener {
 		public void mouseReleased(MouseEvent arg0) {
 			System.out.println("Release mouse " + arg0.getButton() + " "
 					+ arg0.getClickCount() + " times");
-			Teste.eventHandler.addEvent(arg0);
+			Initiator.eventHandler.addEvent(arg0);
 		}
 
 		@Override
 		public void mousePressed(MouseEvent arg0) {
 			System.out.println("Press mouse " + arg0.getButton() + " "
 					+ arg0.getClickCount() + " times");
-			Teste.eventHandler.addEvent(arg0);
+			Initiator.eventHandler.addEvent(arg0);
 		}
 
 		// ---------------------
@@ -30,21 +30,21 @@ public class EventListener {
 		public void mouseWheelMoved(MouseWheelEvent arg0) {
 			System.out.println("ROTATE: " + arg0.getWheelRotation()
 					+ " notches");
-			Teste.eventHandler.addEvent(arg0);
+			Initiator.eventHandler.addEvent(arg0);
 		}
 
 		// ---------------------
 		// MOTION LISTENER
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			Teste.r.mouseMove(Teste.absoluteCenterX, Teste.absoluteCenterY);
-			Teste.eventHandler.addEvent(e);
+			Initiator.r.mouseMove(Initiator.absoluteCenterX, Initiator.absoluteCenterY);
+			Initiator.eventHandler.addEvent(e);
 		}
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			Teste.r.mouseMove(Teste.absoluteCenterX, Teste.absoluteCenterY);
-			Teste.eventHandler.addEvent(e);
+			Initiator.r.mouseMove(Initiator.absoluteCenterX, Initiator.absoluteCenterY);
+			Initiator.eventHandler.addEvent(e);
 		}
 	};
 	// ---------------------
@@ -55,14 +55,14 @@ public class EventListener {
 		public void keyReleased(KeyEvent arg0) {
 			System.out.println("Released "
 					+ KeyEvent.getKeyText(arg0.getKeyCode()));
-			Teste.eventHandler.addEvent(arg0);
+			Initiator.eventHandler.addEvent(arg0);
 		}
 
 		@Override
 		public void keyPressed(KeyEvent arg0) {
 			System.out.println("Pressed "
 					+ KeyEvent.getKeyText(arg0.getKeyCode()));
-			Teste.eventHandler.addEvent(arg0);
+			Initiator.eventHandler.addEvent(arg0);
 		}
 	};
 }

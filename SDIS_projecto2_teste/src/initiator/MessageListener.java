@@ -22,7 +22,7 @@ public class MessageListener extends Thread {
 		LinkedList<Message> controlMessages = new LinkedList<>();
 		while (go) {
 			try {
-				Teste.socket.receive(packet);
+				Initiator.socket.receive(packet);
 				Message.decodePacket(packet.getData(), packet.getLength(),
 						eventMessages, controlMessages, packet.getAddress()); // não há separação (as duas
 												// tratadas pelo event handler)
@@ -31,7 +31,7 @@ public class MessageListener extends Thread {
 					System.out.println("Got event message! WTH?");
 					eventMessages.clear();
 				}
-				Teste.control.handleMessages(controlMessages);
+				Initiator.control.handleMessages(controlMessages);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

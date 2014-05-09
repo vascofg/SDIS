@@ -15,7 +15,7 @@ public class monitorpanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	BufferedImage buffas;
-	
+
 	public monitorpanel() {
 		try {
 			buffas = ImageIO.read(new File("Icon_pc.png"));
@@ -24,7 +24,7 @@ public class monitorpanel extends JPanel {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);

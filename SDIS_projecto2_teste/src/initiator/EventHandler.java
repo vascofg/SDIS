@@ -39,7 +39,7 @@ public class EventHandler extends Thread {
 					if(((KeyEvent)event).getKeyCode()==0) //TODO: keycodes de Ç etc.
 						break;
 				default:
-					Teste.messageSender.addMessage(new Message(event));
+					Initiator.messageSender.addMessage(new Message(event));
 				}
 				// TODO: criar MENSAIGE e adicionar ao sender!
 			} catch (InterruptedException e) { // eventQueue interrompida
@@ -49,12 +49,12 @@ public class EventHandler extends Thread {
 
 	private synchronized void updateMouseDelta(MouseEvent event) {
 		// discard center moves
-		if (event.getX() != Teste.relativeCenterX
-				|| event.getY() != Teste.relativeCenterY) { // discard
-			deltaX += (event.getX() - Teste.relativeCenterX);
-			deltaY += (event.getY() - Teste.relativeCenterY);
+		if (event.getX() != Initiator.relativeCenterX
+				|| event.getY() != Initiator.relativeCenterY) { // discard
+			deltaX += (event.getX() - Initiator.relativeCenterX);
+			deltaY += (event.getY() - Initiator.relativeCenterY);
 			if (!mouseUpdated) { //se rato ainda não tinha sido movido, adiciona mensagem indicativa
-				Teste.messageSender.addMessage(new Message());
+				Initiator.messageSender.addMessage(new Message());
 				mouseUpdated = true;
 			}
 		}

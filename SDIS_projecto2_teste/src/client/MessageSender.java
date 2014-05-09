@@ -30,9 +30,9 @@ public class MessageSender extends Thread {
 
 				bytes = Message.getPacket(messageList);
 				packet = new DatagramPacket(bytes, bytes.length,
-						Receiver.initiatorAddress, Receiver.port);
+						Client.initiatorAddress, Client.port);
 				try {
-					Receiver.socket.send(packet);
+					Client.socket.send(packet);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

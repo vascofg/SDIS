@@ -1,5 +1,7 @@
 package gui;
 
+import initiator.Initiator;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -23,19 +25,20 @@ import javax.swing.SwingConstants;
 
 import monitor.Monitor;
 
-public  class Gui {
-	public JFrame frame;
-	public JPanel panelS;
-	public JPanel panelC;
-	public JPanel panelI;
-	 final static DefaultListModel<String> model = new DefaultListModel<String>();
-	 final static JList<String> list = new JList<String>(model);
-    static ArrayList<Monitor> ls= new ArrayList<Monitor>();
-	static int tamanho= 5;
-	int vel=25;
-	public static ArrayList<JPanel> panels = new ArrayList<JPanel>();
+public class Gui {
+	static JFrame frame;
+	static JPanel panelS;
+	static JPanel panelC;
+	static JPanel panelI;
+	static DefaultListModel<String> model = new DefaultListModel<String>();
+	static JList<String> list = new JList<String>(model);
+	public static Monitor initiatorMonitor;
+	static ArrayList<Monitor> ls = new ArrayList<Monitor>();
+	static int tamanho = 5;
+	static int vel = 25;
+	static ArrayList<JPanel> panels = new ArrayList<JPanel>();
 
-	private class handelador implements ActionListener {
+	private static class handelador implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
 			if (e.getActionCommand().equals("serv")) {
@@ -50,8 +53,11 @@ public  class Gui {
 				frame.setVisible(false);
 				frame.dispose();
 			} else if (e.getActionCommand().equals("con")) {
-				frame.setVisible(false);
-				frame.dispose();
+				if (getNumMonitors() > 0) {
+					Initiator.monitorsReady();
+					frame.setVisible(false);
+					frame.dispose();
+				}
 			} else if (e.getActionCommand().equals("opt")) {
 				frame.setVisible(false);
 				frame.dispose();
@@ -62,14 +68,10 @@ public  class Gui {
 		}
 	}
 
-	public Gui() {
+	public static void init() {
 		frame = new JFrame("init");
 		panelS = new JPanel();
 		panelC = new JPanel();
-
-	}
-
-	public void init() {
 
 		frame.getContentPane().setLayout(new GridLayout(2, 1));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -97,61 +99,56 @@ public  class Gui {
 
 	}
 
-	public static void main(String[] args) {
+	private static void initServ() {
 
-		Gui gg = new Gui();
-		gg.init();
-	}
-
-	public void initServ() {
-	
 		frame = new JFrame("Servidor");
 		frame.setResizable(false);
 		panelS = new JPanel();
 		panelC = new JPanel();
-		panelI= new JPanel();
+		panelI = new JPanel();
 		frame.setPreferredSize(new Dimension(600, 200));
 		frame.setLocationRelativeTo(null);
 		frame.getContentPane().setLayout(new GridLayout(1, 2));
-		panelS.setLayout(new GridLayout(tamanho,tamanho));
+		panelS.setLayout(new GridLayout(tamanho, tamanho));
 		panelS.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(panelI);
 		frame.getContentPane().add(panelS);
 		frame.getContentPane().add(panelC);
-		panelI.setBorder(BorderFactory.createTitledBorder("Available Connections")); 
-		/***********************panel i*******************************/
+		panelI.setBorder(BorderFactory
+				.createTitledBorder("Available Connections"));
+		/*********************** panel i *******************************/
 
-		model.addElement("192.168.26.32   |    jose-pc" );
-	    model.addElement("192.168.26.33   |    armando-pc");
-	    model.addElement("192.168.26.34   |    juvenaldo-pc");
-	    model.addElement("192.168.26.35   |    doce-pc");
-	    model.addElement("192.168.26.36   |    maninho-pc");
-	    
-	    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    list.setBorder(BorderFactory.createEmptyBorder(0, 10, -10, 10));
-	    panelI.add(new JScrollPane(list));
-		
-		/***********************panel i*******************************/
+		model.addElement("192.168.26.32   |    jose-pc");
+		model.addElement("192.168.26.33   |    armando-pc");
+		model.addElement("192.168.26.34   |    juvenaldo-pc");
+		model.addElement("192.168.26.35   |    doce-pc");
+		model.addElement("192.168.26.36   |    maninho-pc");
+
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setBorder(BorderFactory.createEmptyBorder(0, 10, -10, 10));
+		panelI.add(new JScrollPane(list));
+
+		/*********************** panel i *******************************/
 
 		int count = 0;
-		for (int i = 1; i <=tamanho*tamanho ; i++) {
+		for (int i = 1; i <= tamanho * tamanho; i++) {
 			JPanel pan = new JPanel();
-			
+			ls.add(new Monitor(count));
 			pan.setEnabled(true);
-		if(tamanho*tamanho/2+1==i){
-			pan.setBackground(Color.GREEN);
-		}else{
-			pan.setBackground(Color.white);
-			pan.addMouseListener(new BoxListener(pan));
-		}
+			if (tamanho * tamanho / 2 + 1 == i) {
+				pan.setBackground(Color.GREEN);
+				initiatorMonitor = ls.get(i - 1);
+			} else {
+				pan.setBackground(Color.white);
+				pan.addMouseListener(new BoxListener(pan));
+			}
 			pan.setPreferredSize(new Dimension(3, 3));
 			pan.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			 // add a mouse listener
-														// to make the panels
-														// clickable
+			// add a mouse listener
+			// to make the panels
+			// clickable
 			pan.setName(count + "");
-			ls.add(new Monitor(count));
 			++count;
 			panels.add(pan);
 			panelS.add(pan);
@@ -177,42 +174,49 @@ public  class Gui {
 
 	}
 
-	public void createopt() {
-		String speeds[] = {"High","Medium","Slow"};
-		 JComboBox<String> speed = new JComboBox<String>(speeds);
-		 String widths[] = {"3x3","5x5","7x7"};
-		      JComboBox<String> width = new JComboBox<String>(widths);
+	private static void createopt() {
+		String speeds[] = { "High", "Medium", "Slow" };
+		JComboBox<String> speed = new JComboBox<String>(speeds);
+		String widths[] = { "3x3", "5x5", "7x7" };
+		JComboBox<String> width = new JComboBox<String>(widths);
 
-		      JPanel myPanel = new JPanel();
-		      myPanel.add(new JLabel("Refresh Rate:"));
-		      myPanel.add(speed);
-		      myPanel.add(Box.createHorizontalStrut(15)); // a spacer
-		      myPanel.add(new JLabel("Grid Size:"));
-		      myPanel.add(width);
+		JPanel myPanel = new JPanel();
+		myPanel.add(new JLabel("Refresh Rate:"));
+		myPanel.add(speed);
+		myPanel.add(Box.createHorizontalStrut(15)); // a spacer
+		myPanel.add(new JLabel("Grid Size:"));
+		myPanel.add(width);
 
-		      int result = JOptionPane.showConfirmDialog(null, myPanel, 
-		               "Please enter refresh rate and grid width values", JOptionPane.OK_CANCEL_OPTION);
-		      if (result == JOptionPane.OK_OPTION) {
-		         if(speed.getSelectedItem().toString().equals("High")){
-		        	 vel=10;
-		         }else  if(speed.getSelectedItem().toString().equals("Medium")){
-		        	 vel=25;
-		         }else  if(speed.getSelectedItem().toString().equals("Low")){
-		        	 vel=50;
-		         }
-		         
-		         if(width.getSelectedItem().toString().equals("3x3")){
-		        	 tamanho=3;
-		         }else  if(width.getSelectedItem().toString().equals("5x5")){
-		        	 tamanho=5;
-		         }else  if(width.getSelectedItem().toString().equals("7x7")){
-		        	 tamanho=7;
-		         }
-		         
-		         
-		         
-		      }
-		     
+		int result = JOptionPane.showConfirmDialog(null, myPanel,
+				"Please enter refresh rate and grid width values",
+				JOptionPane.OK_CANCEL_OPTION);
+		if (result == JOptionPane.OK_OPTION) {
+			if (speed.getSelectedItem().toString().equals("High")) {
+				vel = 10;
+			} else if (speed.getSelectedItem().toString().equals("Medium")) {
+				vel = 25;
+			} else if (speed.getSelectedItem().toString().equals("Low")) {
+				vel = 50;
+			}
+
+			if (width.getSelectedItem().toString().equals("3x3")) {
+				tamanho = 3;
+			} else if (width.getSelectedItem().toString().equals("5x5")) {
+				tamanho = 5;
+			} else if (width.getSelectedItem().toString().equals("7x7")) {
+				tamanho = 7;
+			}
+
+		}
+
+	}
+
+	private static int getNumMonitors() {
+		int count = 0;
+		for (Monitor mon : ls)
+			if (mon.getIp() != null)
+				count++;
+		return count;
 	}
 
 }

@@ -21,11 +21,11 @@ public class MessageListener extends Thread {
 		LinkedList<Message> messages = new LinkedList<>();
 		while (go) {
 			try {
-				Receiver.socket.receive(packet);
+				Client.socket.receive(packet);
 				Message.decodePacket(packet.getData(), packet.getLength(),
 						messages, messages, packet.getAddress()); // não há separação (as duas
 												// tratadas pelo event handler)
-				Receiver.eventHandler.addMessages(messages);
+				Client.eventHandler.addMessages(messages);
 				messages.clear();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
