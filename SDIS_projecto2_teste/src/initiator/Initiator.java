@@ -12,13 +12,8 @@ import java.awt.Window.Type;
 import java.awt.image.BufferedImage;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import message.Message;
 import monitor.Monitor;
 
@@ -48,21 +43,14 @@ public class Initiator {
 
 	static Control control;
 
-	static InetAddress address;
 	static final int port = 44444;
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
 
-	public static void connect(Monitor monitor) throws NullPointerException {
+	public static void connect() throws NullPointerException {
 		// addressName = JOptionPane.showInputDialog("Input IP address:");
-		try {
-			address = InetAddress.getByName(monitor.getIp());
-			Initiator.messageSender.addMessage(new Message(Message.CONNECT));
-			// TODO: verificar timeout
-		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		Initiator.messageSender.addMessage(new Message(Message.CONNECT, null));
+		// TODO: verificar timeout
 	}
 
 	public static void main(String[] args) throws AWTException {
@@ -142,11 +130,16 @@ public class Initiator {
 		if (tmp == null)
 			System.out.println("Monitor not defined");
 		else {
-			//TODO: apenas mudar se connect tiver sucesso
+			// TODO: apenas mudar se connect tiver sucesso
 			currentMonitor = tmp;
-			edgeThread.pause();
-			connect(tmp);
-			enableWindow();
+			if (currentMonitor == Gui.initiatorMonitor) {
+				edgeThread.unpause();
+				disableWindow();
+			} else {
+				edgeThread.pause();
+				connect();
+				enableWindow();
+			}
 		}
 	}
 
@@ -162,5 +155,9 @@ public class Initiator {
 		// click to grab focus
 		// r.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 		// r.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+	}
+
+	static void disableWindow() {
+		frame.setVisible(false);
 	}
 }

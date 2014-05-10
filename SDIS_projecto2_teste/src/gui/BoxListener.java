@@ -3,6 +3,8 @@ package gui;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -138,11 +140,17 @@ public class BoxListener implements MouseListener {
 	 * Instantiates a Monitor.
 	 */
 	private Monitor instamon(int id, String ip, String port) {
-		Monitor temp = Gui.ls.get(id);
-		ip = JOptionPane.showInputDialog("Input IP address:");
-		temp.setIp(ip);
-		temp.setPort(port);
-		return temp;
+		try {
+			Monitor temp = Gui.ls.get(id);
+			ip = JOptionPane.showInputDialog("Input IP address:");
+			temp.setIp(InetAddress.getByName(ip));
+			temp.setPort(Integer.parseInt(port));
+			return temp;
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**
@@ -199,6 +207,6 @@ public class BoxListener implements MouseListener {
 
 		// disconnect self
 		temp.setIp(null);
-		temp.setPort(null);
+		temp.setPort(0);
 	}
 }

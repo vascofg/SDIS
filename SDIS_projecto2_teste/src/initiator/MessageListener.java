@@ -32,6 +32,7 @@ public class MessageListener extends Thread {
 					eventMessages.clear();
 				}
 				Initiator.control.handleMessages(controlMessages);
+				controlMessages.clear();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

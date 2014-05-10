@@ -35,13 +35,16 @@ public class MessageSender extends Thread {
 					// faz nada)
 
 				bytes = Message.getPacket(messageList);
-				packet = new DatagramPacket(bytes, bytes.length, Initiator.address,
+				packet = new DatagramPacket(bytes, bytes.length, Initiator.currentMonitor.getIp(),
 						Initiator.port);
 				try {
 					Initiator.socket.send(packet);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
+				} catch (NullPointerException e) //entretanto desligou: descarta
+				{
+					//TODO: é preciso fazer alguma coisa aqui?
 				}
 				messageList.clear();
 

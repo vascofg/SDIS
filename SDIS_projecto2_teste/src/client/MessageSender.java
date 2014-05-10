@@ -23,6 +23,7 @@ public class MessageSender extends Thread {
 		DatagramPacket packet;
 		while (go) {
 			try {
+				Thread.sleep(Client.messageDelay);
 				messageList.add(messageQueue.take()); // espera até ter algum
 														// elemento
 				messageQueue.drainTo(messageList); // retira os restantes
@@ -36,6 +37,8 @@ public class MessageSender extends Thread {
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
+				} catch (NullPointerException e) {
+					//ainda não ligado a nenhum peer (não faz nada)
 				}
 				messageList.clear();
 

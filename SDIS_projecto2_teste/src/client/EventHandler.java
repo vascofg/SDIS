@@ -61,14 +61,14 @@ public class EventHandler extends Thread {
 				case Message.CONNECT:
 					Client.initiatorAddress = msg.getAddress();
 					Client.messageSender.addMessage(new Message(
-							Message.RESOLUTION));
+							Message.RESOLUTION, null));
 					break;
 				case Message.DISCONNECT:
 					// TODO: mandar saír
 					break;
 				case Message.ALIVE:
 					Client.messageSender
-							.addMessage(new Message(Message.ALIVE));
+							.addMessage(new Message(Message.ALIVE, null));
 					break;
 				default:
 					System.out.println("Got unexpected message: " + msg.getType());

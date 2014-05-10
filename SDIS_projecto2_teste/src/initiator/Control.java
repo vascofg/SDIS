@@ -12,6 +12,8 @@ public class Control extends Thread {
 			switch (message.getType()) {
 			// TODO: FAZER
 			case Message.EDGE:
+				System.out.println("GOT REMOTE EDGE: " + message.getEdge());
+				Initiator.onEdge(message.getEdge());
 				break;
 			case Message.RESOLUTION:
 				Dimension dim = message.getResolution();

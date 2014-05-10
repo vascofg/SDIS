@@ -1,9 +1,12 @@
 package monitor;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class Monitor {
 	int id;
-	String ip;
-	String port;
+	InetAddress ip;
+	int port;
 	Monitor up;
 	Monitor down;
 	Monitor left;
@@ -14,24 +17,29 @@ public class Monitor {
 	this.id=id;
 	}
 	public void init(){
-		ip= "127.0.0.1";
-		port= "nao sei";
+		try {
+			ip=InetAddress.getByName("127.0.0.1");
+			port= 1234;
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
 	public int getId() {
 		return id;
 	}
-	public String getIp() {
+	public InetAddress getIp() {
 		return ip;
 	}
-	public void setIp(String ip) {
+	public void setIp(InetAddress ip) {
 		this.ip = ip;
 	}
-	public String getPort() {
+	public int getPort() {
 		return port;
 	}
-	public void setPort(String port) {
+	public void setPort(int port) {
 		this.port = port;
 	}
 	public Monitor getUp() {

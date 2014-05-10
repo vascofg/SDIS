@@ -27,6 +27,8 @@ public class MessageListener extends Thread {
 												// tratadas pelo event handler)
 				Client.eventHandler.addMessages(messages);
 				messages.clear();
+				//TODO: solução um bocado má?
+				Client.edgeDetect.unpause();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

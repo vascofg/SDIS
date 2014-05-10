@@ -33,11 +33,11 @@ public class EdgeDetect extends Thread {
 		super.run();
 		while (go) {
 			try {
-				Thread.sleep(100);
 				synchronized (this) {
 					while (threadSuspended)
 						wait();
 				}
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();

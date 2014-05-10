@@ -105,11 +105,12 @@ public class Message {
 						// update do rato)
 	}
 
-	public Message(byte messageType) { // constructor para mensagens de controlo
+	public Message(byte messageType, Byte edge) { // constructor para mensagens de controlo
 		this.bytes = new LinkedList<Byte>();
 		bytes.add(messageType);
 		switch (messageType) {
 		case EDGE:
+			bytes.add(edge);
 			break;
 		case RESOLUTION:
 			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -234,11 +235,11 @@ public class Message {
 		return dim;
 	}
 	
-	public int getEdge() {
+	public byte getEdge() {
 		byte[] bytes = new byte[1];
 		Iterator<Byte> t = this.bytes.listIterator(1);
 		bytes[0] = (byte) t.next();
-		int edge = byteArrayToSignedInt(bytes);
+		byte edge = (byte) byteArrayToSignedInt(bytes);
 		return edge;
 	}
 
