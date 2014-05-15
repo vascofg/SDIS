@@ -58,19 +58,6 @@ public class Client {
 
 	static void onEdge(byte edge) {
 		edgeDetect.pause();
-		switch (edge) {
-		case EdgeDetect.EDGE_LEFT:
-			messageSender.addMessage(new Message(Message.EDGE, EdgeDetect.EDGE_LEFT));
-			break;
-		case EdgeDetect.EDGE_RIGHT:
-			messageSender.addMessage(new Message(Message.EDGE, EdgeDetect.EDGE_RIGHT));
-			break;
-		case EdgeDetect.EDGE_TOP:
-			messageSender.addMessage(new Message(Message.EDGE, EdgeDetect.EDGE_TOP));
-			break;
-		case EdgeDetect.EDGE_BOTTOM:
-			messageSender.addMessage(new Message(Message.EDGE, EdgeDetect.EDGE_BOTTOM));
-			break;
-		}
+		messageSender.addMessage(new Message(Message.EDGE, edge));
 	}
 }

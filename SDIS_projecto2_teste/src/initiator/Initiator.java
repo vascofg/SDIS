@@ -28,6 +28,7 @@ public class Initiator {
 
 	static boolean captured = false;
 
+	static Monitor previousMonitor;
 	static Monitor currentMonitor;
 
 	static DatagramSocket socket;
@@ -46,12 +47,6 @@ public class Initiator {
 	static final int port = 44444;
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
-
-	public static void connect() throws NullPointerException {
-		// addressName = JOptionPane.showInputDialog("Input IP address:");
-		Initiator.messageSender.addMessage(new Message(Message.CONNECT, null));
-		// TODO: verificar timeout
-	}
 
 	public static void main(String[] args) throws AWTException {
 		Gui.init();
@@ -95,6 +90,7 @@ public class Initiator {
 		messageListener = new MessageListener();
 
 		control = new Control();
+		control.pause();
 		control.start();
 
 		messageSender.start();
@@ -130,15 +126,15 @@ public class Initiator {
 		if (tmp == null)
 			System.out.println("Monitor not defined");
 		else {
-			// TODO: apenas mudar se connect tiver sucesso
+			previousMonitor = currentMonitor; //save previous
 			currentMonitor = tmp;
 			if (currentMonitor == Gui.initiatorMonitor) {
+				control.pause();
 				edgeThread.unpause();
 				disableWindow();
 			} else {
 				edgeThread.pause();
-				connect();
-				enableWindow();
+				control.newConnection();
 			}
 		}
 	}
@@ -159,5 +155,19 @@ public class Initiator {
 
 	static void disableWindow() {
 		frame.setVisible(false);
+	}
+	
+	public static void connected() {
+		enableWindow();
+	}
+	
+	public static void timeout() {
+		System.out.println("TIMEOUT");
+		currentMonitor = previousMonitor;
+		if (currentMonitor == Gui.initiatorMonitor) {
+			control.pause();
+			edgeThread.unpause();
+			disableWindow();
+		}
 	}
 }

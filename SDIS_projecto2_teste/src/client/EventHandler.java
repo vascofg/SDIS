@@ -58,6 +58,7 @@ public class EventHandler extends Thread {
 					argument = msg.getKeyCode();
 					Client.r.keyRelease(argument);
 					break;
+				//TODO: quando ligar, passar ponto do ecrã para dar ideia de continuidade (ponto/res*100)
 				case Message.CONNECT:
 					Client.initiatorAddress = msg.getAddress();
 					Client.messageSender.addMessage(new Message(
