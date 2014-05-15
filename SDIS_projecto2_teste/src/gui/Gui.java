@@ -33,7 +33,7 @@ public class Gui {
 	static DefaultListModel<String> model = new DefaultListModel<String>();
 	static JList<String> list = new JList<String>(model);
 	public static Monitor initiatorMonitor;
-	static ArrayList<Monitor> ls = new ArrayList<Monitor>();
+	public static ArrayList<Monitor> ls = new ArrayList<Monitor>();
 	static int tamanho = 5;
 	static int vel = 25;
 	static ArrayList<JPanel> panels = new ArrayList<JPanel>();

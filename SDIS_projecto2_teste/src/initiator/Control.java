@@ -1,10 +1,12 @@
 package initiator;
 
 import java.awt.Dimension;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import message.Message;
+import monitor.Monitor;
 
 public class Control extends Thread {
 
@@ -71,6 +73,13 @@ public class Control extends Thread {
 				break;
 			}
 		}
+	}
+	
+	public void disconnectAll(Collection<Monitor> monitors) {
+		Message msg = new Message(Message.DISCONNECT, null);
+		for (Monitor mon : monitors)
+			if (mon.getIp() != null)
+				Initiator.messageSender.sendMessage(msg, mon);
 	}
 
 	@Override

@@ -105,7 +105,8 @@ public class Message {
 						// update do rato)
 	}
 
-	public Message(byte messageType, Byte edge) { // constructor para mensagens de controlo
+	public Message(byte messageType, Byte edge) { // constructor para mensagens
+													// de controlo
 		this.bytes = new LinkedList<Byte>();
 		bytes.add(messageType);
 		switch (messageType) {
@@ -221,7 +222,7 @@ public class Message {
 		int keyCode = byteArrayToUnsignedInt(bytes);
 		return keyCode;
 	}
-	
+
 	public Dimension getResolution() {
 		byte[] bytes = new byte[2];
 		Dimension dim = new Dimension();
@@ -234,7 +235,7 @@ public class Message {
 		dim.height = byteArrayToSignedInt(bytes);
 		return dim;
 	}
-	
+
 	public byte getEdge() {
 		byte[] bytes = new byte[1];
 		Iterator<Byte> t = this.bytes.listIterator(1);
@@ -255,8 +256,17 @@ public class Message {
 		return bos.toByteArray();
 	}
 
+	public byte[] getBytes() {
+		Iterator<Byte> t = this.bytes.listIterator();
+		byte[] bytes = new byte[this.bytes.size()];
+		for (int i = 0; i < this.bytes.size(); i++)
+			bytes[i] = t.next();
+		return bytes;
+	}
+
 	public static void decodePacket(byte[] bytes, int len,
-			List<Message> eventMessages, List<Message> controlMessages, InetAddress address) {
+			List<Message> eventMessages, List<Message> controlMessages,
+			InetAddress address) {
 		Message currentMessage;
 		List<Byte> messageBytes = new LinkedList<>();
 		int i = 0, msgLen;
@@ -264,15 +274,13 @@ public class Message {
 			msgLen = Message.getMessageLength(bytes[i]);
 			for (int j = 0; j < msgLen; j++)
 				messageBytes.add(bytes[i++]);
-			
+
 			currentMessage = new Message(messageBytes);
-			if(currentMessage.isControl())
-			{
-				//guarda peer de onde veio
+			if (currentMessage.isControl()) {
+				// guarda peer de onde veio
 				currentMessage.setAddress(address);
 				controlMessages.add(currentMessage);
-			}
-			else
+			} else
 				eventMessages.add(currentMessage);
 			messageBytes.clear();
 		}

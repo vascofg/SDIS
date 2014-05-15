@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import message.Message;
+import monitor.Monitor;
 
 public class MessageSender extends Thread {
 	private boolean go = true;
@@ -29,22 +30,23 @@ public class MessageSender extends Thread {
 				messageQueue.drainTo(messageList); // retira os restantes
 													// elementos
 				try {
-					messageList.add(new Message(Initiator.eventHandler.getMouseDelta()));
+					messageList.add(new Message(Initiator.eventHandler
+							.getMouseDelta()));
 				} catch (Exception e) {
 				} // adiciona movimento do rato (se for 0, atira excepção e não
 					// faz nada)
 
 				bytes = Message.getPacket(messageList);
-				packet = new DatagramPacket(bytes, bytes.length, Initiator.currentMonitor.getIp(),
-						Initiator.port);
+				packet = new DatagramPacket(bytes, bytes.length,
+						Initiator.currentMonitor.getIp(), Initiator.port);
 				try {
 					Initiator.socket.send(packet);
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (NullPointerException e) //entretanto desligou: descarta
+					// socket closed do nothing
+				} catch (NullPointerException e) // entretanto desligou:
+													// descarta
 				{
-					//TODO: é preciso fazer alguma coisa aqui?
+					// TODO: é preciso fazer alguma coisa aqui?
 				}
 				messageList.clear();
 
@@ -55,5 +57,24 @@ public class MessageSender extends Thread {
 
 	public void addMessage(Message message) {
 		messageQueue.offer(message); // não espera para inserir
+	}
+
+	// sends message to specific monitor immediately
+	public void sendMessage(Message message, Monitor monitor) {
+		byte[] msgBytes = message.getBytes();
+		DatagramPacket packet = new DatagramPacket(msgBytes, msgBytes.length,
+				monitor.getIp(), Initiator.port);
+		System.out.println("Sending disconnect to "
+				+ monitor.getIp().getHostAddress());
+		try {
+			Initiator.socket.send(packet);
+		} catch (IOException e) {
+		}
+	}
+
+	@Override
+	public synchronized void interrupt() {
+		this.go = false;
+		super.interrupt();
 	}
 }

@@ -65,7 +65,7 @@ public class EventHandler extends Thread {
 							Message.RESOLUTION, null));
 					break;
 				case Message.DISCONNECT:
-					// TODO: mandar saír
+					Client.exit();
 					break;
 				case Message.ALIVE:
 					Client.messageSender

@@ -9,12 +9,15 @@ import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.Window.Type;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+
 import javax.swing.JFrame;
-import message.Message;
+
 import monitor.Monitor;
 
 public class Initiator {
@@ -23,6 +26,7 @@ public class Initiator {
 			relativeCenterY;
 
 	static JFrame frame;
+	static JFrame closeFrame;
 
 	static Robot r;
 
@@ -78,6 +82,20 @@ public class Initiator {
 		frame.setAlwaysOnTop(true);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setFocusTraversalKeysEnabled(false); // allow capture of tab key
+		frame.addMouseListener(EventListener.mouseAdapter);
+		frame.addMouseMotionListener(EventListener.mouseAdapter);
+		frame.addMouseWheelListener(EventListener.mouseAdapter);
+		frame.addKeyListener(EventListener.keyAdapter);
+
+		closeFrame = new JFrame("CLOSE");
+		closeFrame.setResizable(false);
+		closeFrame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				exit();
+				super.windowClosed(e);
+			}
+		});
 
 		edgeThread = new EdgeDetect();
 		// edgeThread.start();
@@ -95,16 +113,12 @@ public class Initiator {
 
 		messageSender.start();
 		messageListener.start();
-
-		frame.addMouseListener(EventListener.mouseAdapter);
-		frame.addMouseMotionListener(EventListener.mouseAdapter);
-		frame.addMouseWheelListener(EventListener.mouseAdapter);
-		frame.addKeyListener(EventListener.keyAdapter);
 	}
 
 	public static void monitorsReady() {
 		currentMonitor = Gui.initiatorMonitor;
 		edgeThread.start();
+		closeFrame.setVisible(true);
 	}
 
 	static void onEdge(byte edge) {
@@ -123,10 +137,8 @@ public class Initiator {
 			tmp = currentMonitor.getDown();
 			break;
 		}
-		if (tmp == null)
-			System.out.println("Monitor not defined");
-		else {
-			previousMonitor = currentMonitor; //save previous
+		if (tmp != null) {
+			previousMonitor = currentMonitor; // save previous
 			currentMonitor = tmp;
 			if (currentMonitor == Gui.initiatorMonitor) {
 				control.pause();
@@ -156,11 +168,11 @@ public class Initiator {
 	static void disableWindow() {
 		frame.setVisible(false);
 	}
-	
+
 	public static void connected() {
 		enableWindow();
 	}
-	
+
 	public static void timeout() {
 		System.out.println("TIMEOUT");
 		currentMonitor = previousMonitor;
@@ -169,5 +181,16 @@ public class Initiator {
 			edgeThread.unpause();
 			disableWindow();
 		}
+	}
+
+	private static void exit() {
+		control.disconnectAll(Gui.ls);
+		frame.dispose();
+		closeFrame.dispose();
+		edgeThread.interrupt();
+		eventHandler.interrupt();
+		messageSender.interrupt();
+		messageListener.interrupt();
+		control.interrupt();
 	}
 }

@@ -35,10 +35,9 @@ public class MessageSender extends Thread {
 				try {
 					Client.socket.send(packet);
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					// socket closed (do nothing)
 				} catch (NullPointerException e) {
-					//ainda não ligado a nenhum peer (não faz nada)
+					// ainda não ligado a nenhum peer (não faz nada)
 				}
 				messageList.clear();
 
@@ -49,5 +48,11 @@ public class MessageSender extends Thread {
 
 	public void addMessage(Message message) {
 		messageQueue.offer(message); // não espera para inserir
+	}
+
+	@Override
+	public synchronized void interrupt() {
+		this.go = false;
+		super.interrupt();
 	}
 }

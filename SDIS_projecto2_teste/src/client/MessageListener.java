@@ -1,5 +1,6 @@
 package client;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.LinkedList;
@@ -23,16 +24,24 @@ public class MessageListener extends Thread {
 			try {
 				Client.socket.receive(packet);
 				Message.decodePacket(packet.getData(), packet.getLength(),
-						messages, messages, packet.getAddress()); // não há separação (as duas
-												// tratadas pelo event handler)
+						messages, messages, packet.getAddress()); // não há
+																	// separação
+																	// (as duas
+				// tratadas pelo event handler)
 				Client.eventHandler.addMessages(messages);
 				messages.clear();
-				//TODO: solução um bocado má?
 				Client.edgeDetect.unpause();
+				Client.frame.getContentPane().setBackground(Color.green);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// socket closed (do nothing)
 			}
 		}
+	}
+
+	@Override
+	public synchronized void interrupt() {
+		this.go = false;
+		super.interrupt();
+		Client.socket.close();
 	}
 }

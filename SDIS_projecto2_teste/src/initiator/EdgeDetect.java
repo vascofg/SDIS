@@ -41,28 +41,22 @@ public class EdgeDetect extends Thread {
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();
-			if (currentPos.x == 0) {
-				System.out.println("EDGE DETECT: LEFT");
+			if (currentPos.x == 0)
 				Initiator.onEdge(EDGE_LEFT);
-			} else if (currentPos.x == maxPos.x) {
-				System.out.println("EDGE DETECT: RIGHT");
+			else if (currentPos.x == maxPos.x)
 				Initiator.onEdge(EDGE_RIGHT);
-			}
-			if (currentPos.y == 0) {
-				System.out.println("EDGE DETECT: TOP");
+			else if (currentPos.y == 0)
 				Initiator.onEdge(EDGE_TOP);
-			} else if (currentPos.y == maxPos.y) {
-				System.out.println("EDGE DETECT: BOTTOM");
+			else if (currentPos.y == maxPos.y)
 				Initiator.onEdge(EDGE_BOTTOM);
-			}
-
 		}
-		System.out.println("Edge thread ending...");
 	}
 
 	@Override
 	public synchronized void interrupt() {
 		this.go = false;
+		unpause();
+		super.interrupt();
 	}
 
 	public synchronized void pause() {

@@ -24,19 +24,28 @@ public class MessageListener extends Thread {
 			try {
 				Initiator.socket.receive(packet);
 				Message.decodePacket(packet.getData(), packet.getLength(),
-						eventMessages, controlMessages, packet.getAddress()); // não há separação (as duas
-												// tratadas pelo event handler)
-				if(eventMessages.size()>0)
-				{
+						eventMessages, controlMessages, packet.getAddress()); // não
+																				// há
+																				// separação
+																				// (as
+																				// duas
+				// tratadas pelo event handler)
+				if (eventMessages.size() > 0) {
 					System.out.println("Got event message! WTH?");
 					eventMessages.clear();
 				}
 				Initiator.control.handleMessages(controlMessages);
 				controlMessages.clear();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// socket closed (do nothing)
 			}
 		}
+	}
+
+	@Override
+	public synchronized void interrupt() {
+		this.go = false;
+		super.interrupt();
+		Initiator.socket.close();
 	}
 }
