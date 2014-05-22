@@ -27,8 +27,8 @@ public class Message {
 	public static final byte DISCONNECT = 9;
 	public static final byte RESOLUTION = 10;
 	public static final byte ALIVE = 11;
-	public static final byte FLAG = -1; // 0xFF
-	// TODO: Remover flag
+	public static final byte CLIPBOARD_HAVE= 12;
+	public static final byte CLIPBOARD_GET = 13;
 
 	private static final byte AVERAGE_NO_BYTES = 6; // número previsto médio de
 													// bytes por msg
@@ -49,19 +49,19 @@ public class Message {
 		switch (msgType) {
 		case MOUSE_MOVE:
 		case RESOLUTION:
-			return 6;
+			return 5;
 		case MOUSE_PRESS:
 		case MOUSE_RELEASE:
 		case KEY_PRESS:
 		case KEY_RELEASE:
-			return 4;
+			return 3;
 		case MOUSE_SCROLL:
 		case EDGE:
-			return 3;
+			return 2;
 		case CONNECT:
 		case DISCONNECT:
 		case ALIVE:
-			return 2;
+			return 1;
 		default:
 			return 0;
 		}
@@ -74,29 +74,24 @@ public class Message {
 			bytes.add(Message.MOUSE_PRESS);
 			bytes.addAll(intToByteList(InputEvent
 					.getMaskForButton(((MouseEvent) event).getButton()), 2));
-			bytes.add(FLAG);
 			break;
 		case MouseEvent.MOUSE_RELEASED:
 			bytes.add(Message.MOUSE_RELEASE);
 			bytes.addAll(intToByteList(InputEvent
 					.getMaskForButton(((MouseEvent) event).getButton()), 2));
-			bytes.add(FLAG);
 			break;
 		case MouseEvent.MOUSE_WHEEL:
 			bytes.add(Message.MOUSE_SCROLL);
 			bytes.addAll(intToByteList(
 					((MouseWheelEvent) event).getWheelRotation(), 1));
-			bytes.add(FLAG);
 			break;
 		case KeyEvent.KEY_PRESSED:
 			bytes.add(Message.KEY_PRESS);
 			bytes.addAll(intToByteList(((KeyEvent) event).getKeyCode(), 2));
-			bytes.add(FLAG);
 			break;
 		case KeyEvent.KEY_RELEASED:
 			bytes.add(Message.KEY_RELEASE);
 			bytes.addAll(intToByteList(((KeyEvent) event).getKeyCode(), 2));
-			bytes.add(FLAG);
 			break;
 		}
 	}
@@ -119,7 +114,6 @@ public class Message {
 			bytes.addAll(intToByteList(dim.height, 2));
 			break;
 		}
-		bytes.add(FLAG);
 	}
 
 	public Message(List<Byte> bytes) {
@@ -133,7 +127,6 @@ public class Message {
 		bytes.add(Message.MOUSE_MOVE);
 		bytes.addAll(intToByteList(p.x, 2)); // x
 		bytes.addAll(intToByteList(p.y, 2)); // y
-		bytes.add(Message.FLAG);
 	}
 
 	public boolean isControl() {
@@ -143,6 +136,8 @@ public class Message {
 		case RESOLUTION:
 		case DISCONNECT:
 		case ALIVE:
+		case CLIPBOARD_HAVE:
+		case CLIPBOARD_GET:
 			return true;
 		default:
 			return false;
@@ -271,7 +266,10 @@ public class Message {
 		List<Byte> messageBytes = new LinkedList<>();
 		int i = 0, msgLen;
 		while (i < len) {
-			msgLen = Message.getMessageLength(bytes[i]);
+			if(bytes[0] == CLIPBOARD_HAVE) //read to end
+				msgLen = len;
+			else
+				msgLen = Message.getMessageLength(bytes[i]);
 			for (int j = 0; j < msgLen; j++)
 				messageBytes.add(bytes[i++]);
 
