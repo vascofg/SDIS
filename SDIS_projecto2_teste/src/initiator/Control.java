@@ -71,6 +71,9 @@ public class Control extends Thread {
 			case Message.ALIVE:
 				retries = numRetries; //reset retries
 				break;
+			case Message.CLIPBOARD_HAVE:
+				//TODO: enviar para todos os peers mensagem
+				break;
 			}
 		}
 	}
