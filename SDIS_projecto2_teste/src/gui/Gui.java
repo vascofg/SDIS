@@ -51,6 +51,7 @@ public class Gui {
 				JOptionPane.showMessageDialog(null, "CLI been clicked");
 			} else if (e.getActionCommand().equals("exit")) {
 				frame.setVisible(false);
+				Initiator.exit();
 				frame.dispose();
 			} else if (e.getActionCommand().equals("con")) {
 				if (getNumMonitors() > 0) {

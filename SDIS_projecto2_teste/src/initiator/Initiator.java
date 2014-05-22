@@ -174,16 +174,20 @@ public class Initiator {
 	}
 
 	public static void timeout() {
+		// TODO: voltar para monitor anterior: pode não ter adjacencias
+		// válidas...
 		System.out.println("TIMEOUT");
-		currentMonitor = previousMonitor;
-		if (currentMonitor == Gui.initiatorMonitor) {
-			control.pause();
-			edgeThread.unpause();
-			disableWindow();
-		}
+		// currentMonitor = previousMonitor;
+		// if (currentMonitor == Gui.initiatorMonitor) {
+		//TODO: set current monitor as null
+		currentMonitor = Gui.initiatorMonitor;
+		control.pause();
+		edgeThread.unpause();
+		disableWindow();
+		// }
 	}
 
-	private static void exit() {
+	public static void exit() {
 		control.disconnectAll(Gui.ls);
 		frame.dispose();
 		closeFrame.dispose();
