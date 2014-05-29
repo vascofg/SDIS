@@ -1,5 +1,7 @@
 package gui;
 
+import httpServer.HttpConnection;
+import httpServer.User;
 import initiator.Initiator;
 
 import java.awt.Color;
@@ -20,6 +22,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
@@ -37,22 +40,50 @@ public class MainGUI {
 	static int tamanho = 5;
 	static int vel = 25;
 	static ArrayList<JPanel> panels = new ArrayList<JPanel>();
-
+	static HttpConnection hC = new HttpConnection();
+	static ArrayList<User> users = new ArrayList<User>();
+	
+	
 	private static class handelador implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
 			if (e.getActionCommand().equals("serv")) {
-				frame.setVisible(false);
-				frame.dispose();
-				initServ();
+				try {
+					hC.init();
+					frame.setVisible(false);
+					frame.dispose();
+					initServ("");
+					String temp = hC.rsp(1);
+					JTextArea txtA= new JTextArea(temp);
+					txtA.setEditable(true);
+					JOptionPane.showMessageDialog(frame,txtA );
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			} else if (e.getActionCommand().equals("cli")) {
-				frame.setVisible(false);
-				frame.dispose();
-				JOptionPane.showMessageDialog(null, "CLI been clicked");
+				try {
+					hC.init();
+					hC.setCode(JOptionPane.showInputDialog(frame, "Insert Room code", "Enter room"));
+					frame.setVisible(false);
+					frame.dispose();
+					hC.rsp(2);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				// TODO por cenas
 			} else if (e.getActionCommand().equals("exit")) {
-				frame.setVisible(false);
-				Initiator.exit();
-				frame.dispose();
+				try {
+					frame.setVisible(false);
+					Initiator.exit();
+					frame.dispose();
+					hC.rsp(4);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			} else if (e.getActionCommand().equals("con")) {
 				if (getNumMonitors() > 0) {
 					Initiator.monitorsReady();
@@ -63,11 +94,39 @@ public class MainGUI {
 				frame.setVisible(false);
 				frame.dispose();
 				createopt();
-				initServ();
+				initServ("");
+
+			}
+			else if (e.getActionCommand().equals("test")){
+				
+				try {
+					getIps(hC.rsp(3));
+					
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
 			}
 
 		}
 	}
+	
+	public static void getIps(String txt){
+		if(txt!=""){
+		String[] uses =txt.split("~");
+		String[] preps=null;
+		for(String c: uses){
+			preps= c.split(" ");
+			users.add(new User(preps[0], preps[1]));
+			model.addElement("           " +preps[0]);
+		}
+
+		}
+	}
+
+	
 
 	public static void init() {
 		frame = new JFrame("init");
@@ -100,8 +159,8 @@ public class MainGUI {
 
 	}
 
-	private static void initServ() {
-
+	private static void initServ(String ips) {
+		
 		frame = new JFrame("Servidor");
 		frame.setResizable(false);
 		panelS = new JPanel();
@@ -119,13 +178,7 @@ public class MainGUI {
 		panelI.setBorder(BorderFactory
 				.createTitledBorder("Available Connections"));
 		/*********************** panel i *******************************/
-
-		model.addElement("192.168.26.32   |    jose-pc");
-		model.addElement("192.168.26.33   |    armando-pc");
-		model.addElement("192.168.26.34   |    juvenaldo-pc");
-		model.addElement("192.168.26.35   |    doce-pc");
-		model.addElement("192.168.26.36   |    maninho-pc");
-
+	
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setBorder(BorderFactory.createEmptyBorder(0, 10, -10, 10));
 		panelI.add(new JScrollPane(list));
@@ -157,18 +210,23 @@ public class MainGUI {
 
 		JButton con = new JButton("Connect");
 		JButton opt = new JButton("Options");
+		JButton ts = new JButton("test");
 		JButton ex = new JButton("Exit");
 
-		panelC.setLayout(new GridLayout(3, 1));
+		panelC.setLayout(new GridLayout(4, 1));
 		panelC.add(con);
 		panelC.add(opt);
+		panelC.add(ts);
 		panelC.add(ex);
+		
 		ex.addActionListener(new handelador());
 		opt.addActionListener(new handelador());
 		con.addActionListener(new handelador());
+		ts.addActionListener(new handelador());
 		ex.setActionCommand("exit");
 		con.setActionCommand("con");
 		opt.setActionCommand("opt");
+		ts.setActionCommand("test");
 
 		frame.pack();
 		frame.setVisible(true);
