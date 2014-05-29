@@ -3,6 +3,7 @@ package gui;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -26,7 +27,24 @@ public class BoxListener implements MouseListener {
 	public void mousePressed(MouseEvent arg0) {
 		JPanel btnPanel = (JPanel) arg0.getSource();
 		System.out.println(btnPanel.getName());
-		System.out.println(MainGUI.list.getSelectedValue());
+
+		String[] ips = MainGUI.list.getSelectedValue().getIps();
+		for (String ip : ips) {
+			System.out.println(ip);
+			InetAddress addr;
+			try {
+				int pos = ip.indexOf(':');
+				if(pos!=-1)
+					ip = ip.substring(0, pos);
+				addr = InetAddress.getByName(ip);
+				if (addr.isReachable(500))
+					System.out.println("REACHABLE!");
+				else
+					System.out.println("NOT REACHABLE");
+			} catch (IOException e) {
+
+			}
+		}
 
 		if (clied) { // disconnects the Monitor
 			pp.setBackground(Color.WHITE);
@@ -74,9 +92,10 @@ public class BoxListener implements MouseListener {
 		Monitor mon = null;
 
 		if (((id + 1) % tamanho) != 0
-				&& (MainGUI.panels.get(id + 1).getBackground().equals(Color.BLACK) || MainGUI.panels
-						.get(id + 1).getBackground().equals(Color.GREEN))) { // check
-																				// right
+				&& (MainGUI.panels.get(id + 1).getBackground()
+						.equals(Color.BLACK) || MainGUI.panels.get(id + 1)
+						.getBackground().equals(Color.GREEN))) { // check
+																	// right
 
 			// create monitor
 			if (!inst) {
@@ -89,9 +108,10 @@ public class BoxListener implements MouseListener {
 			MainGUI.panels.get(id).setBackground(Color.BLACK);
 
 		} else if (((id + 1) % tamanho) != 1
-				&& (MainGUI.panels.get(id - 1).getBackground().equals(Color.BLACK) || MainGUI.panels
-						.get(id - 1).getBackground().equals(Color.GREEN))) { // check
-																				// left
+				&& (MainGUI.panels.get(id - 1).getBackground()
+						.equals(Color.BLACK) || MainGUI.panels.get(id - 1)
+						.getBackground().equals(Color.GREEN))) { // check
+																	// left
 
 			// create monitor
 			if (!inst) {
@@ -105,8 +125,9 @@ public class BoxListener implements MouseListener {
 
 		} else if ((id / tamanho) != 0
 				&& (MainGUI.panels.get(id - tamanho).getBackground()
-						.equals(Color.BLACK) || MainGUI.panels.get(id - tamanho)
-						.getBackground().equals(Color.GREEN))) { // check top
+						.equals(Color.BLACK) || MainGUI.panels
+						.get(id - tamanho).getBackground().equals(Color.GREEN))) { // check
+																					// top
 
 			// create monitor
 			if (!inst) {
@@ -120,8 +141,9 @@ public class BoxListener implements MouseListener {
 
 		} else if (((id / tamanho) != tamanho - 1)
 				&& (MainGUI.panels.get(id + tamanho).getBackground()
-						.equals(Color.BLACK) || MainGUI.panels.get(id + tamanho)
-						.getBackground().equals(Color.GREEN))) { // check bottom
+						.equals(Color.BLACK) || MainGUI.panels
+						.get(id + tamanho).getBackground().equals(Color.GREEN))) { // check
+																					// bottom
 
 			// create monitor
 			if (!inst) {

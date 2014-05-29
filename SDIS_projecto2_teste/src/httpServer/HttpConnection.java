@@ -54,11 +54,11 @@ public class HttpConnection {
 				
 				ArrayList<Inet4Address> ipcs= getIps();
 				for(Inet4Address addr: ipcs){
-				st+= addr.toString() +":4000~";
+				st+= addr.toString() +":4000";
 				}
 				System.out.println(st);
 				st = http.sendPost("action=" + code + "&name=" + pcName
-						+ "&ip="+st);
+						+ "&ip="+st+"~");
 				System.out.println(st);
 			}else if(nr==3){
 				String smth= http.sendPost("action=" + 69 + "&file=" + code);

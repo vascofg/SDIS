@@ -33,8 +33,8 @@ public class MainGUI {
 	static JPanel panelS;
 	static JPanel panelC;
 	static JPanel panelI;
-	static DefaultListModel<String> model = new DefaultListModel<String>();
-	static JList<String> list = new JList<String>(model);
+	static DefaultListModel<User> model = new DefaultListModel<User>();
+	static JList<User> list = new JList<User>(model);
 	public static Monitor initiatorMonitor;
 	public static ArrayList<Monitor> ls = new ArrayList<Monitor>();
 	static int tamanho = 5;
@@ -117,10 +117,12 @@ public class MainGUI {
 		if(txt!=""){
 		String[] uses =txt.split("~");
 		String[] preps=null;
+		model.clear();
 		for(String c: uses){
 			preps= c.split(" ");
-			users.add(new User(preps[0], preps[1]));
-			model.addElement("           " +preps[0]);
+			User temp = new User(preps[0], preps[1]);
+			users.add(temp);
+			model.addElement(temp);
 		}
 
 		}
