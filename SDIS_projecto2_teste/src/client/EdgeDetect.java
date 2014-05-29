@@ -41,19 +41,19 @@ public class EdgeDetect extends Thread {
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();
-			if (currentPos.x == 0) {
+			if (currentPos.x <= 0) {
 				// move one pixel off the edge (avoid leaving screen instantly
 				// when connected)
-				Client.r.mouseMove(1, currentPos.y);
+				//Client.r.mouseMove(1, currentPos.y);
 				Client.onEdge(EDGE_LEFT);
-			} else if (currentPos.x == maxPos.x) {
-				Client.r.mouseMove(currentPos.x - 1, currentPos.y);
+			} else if (currentPos.x >= maxPos.x) {
+				//Client.r.mouseMove(currentPos.x - 1, currentPos.y);
 				Client.onEdge(EDGE_RIGHT);
-			} else if (currentPos.y == 0) {
-				Client.r.mouseMove(currentPos.x, 1);
+			} else if (currentPos.y <= 0) {
+				//Client.r.mouseMove(currentPos.x, 1);
 				Client.onEdge(EDGE_TOP);
-			} else if (currentPos.y == maxPos.y) {
-				Client.r.mouseMove(currentPos.x, currentPos.y - 1);
+			} else if (currentPos.y >= maxPos.y) {
+				//Client.r.mouseMove(currentPos.x, currentPos.y - 1);
 				Client.onEdge(EDGE_BOTTOM);
 			}
 

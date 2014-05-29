@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import clipboard.ClipboardListener;
 import message.Message;
 
 public class Control extends Thread {
@@ -54,7 +53,14 @@ public class Control extends Thread {
 
 	public void handleMessages(List<Message> messages) {
 		for (Message message : messages) {
-			switch (message.getType()) {
+			byte msgType = message.getType();
+			// reject messages which do not come from the currentMonitor (except
+			// CLIPBOARD_HAVE)
+			if (msgType != Message.CLIPBOARD_HAVE
+					&& !message.getRemoteAddress().equals(
+							Initiator.currentMonitor))
+				continue;
+			switch (msgType) {
 			case Message.EDGE:
 				Initiator.onEdge(message.getEdge());
 				break;

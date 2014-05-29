@@ -122,12 +122,11 @@ public class FileHandler extends Thread {
 	}
 
 	private static String getRelativePath(File file, File folder) {
-		String filePath = file.getAbsolutePath();
-		String folderPath = folder.getAbsolutePath();
+		String filePath = file.getAbsolutePath().replace('\\', '/');
+		String folderPath = folder.getAbsolutePath().replace('\\', '/');
 		if (filePath.startsWith(folderPath)) {
-			return filePath.substring(
-					folderPath.length() + (folderPath.contains(":") ? 0 : 1))
-					.replace('\\', '/');
+			return filePath.substring(folderPath.length()
+					+ (folderPath.contains("/") ? 1 : 0));
 		} else {
 			return null;
 		}

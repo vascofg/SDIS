@@ -95,6 +95,7 @@ public class Client {
 	}
 
 	public static void exit() {
+		//TODO: enviar mensagem disconnect
 		statusGUI.dispose();
 		eventHandler.interrupt();
 		edgeDetect.interrupt();
@@ -103,9 +104,18 @@ public class Client {
 		fileHandler.interrupt();
 		fileListener.interrupt();
 	}
+	
+	public static void leaveScreen() {
+		Client.statusGUI.setActivity(false);
+		edgeDetect.pause();
+	}
+	
+	public static void joinScreen() {
+		Client.statusGUI.setActivity(true);
+		edgeDetect.unpause();
+	}
 
 	static void onEdge(byte edge) {
-		edgeDetect.pause();
 		messageSender.addMessage(Message.edge(edge));
 	}
 }
