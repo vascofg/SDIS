@@ -24,6 +24,7 @@ import javax.swing.JFrame;
 import clipboard.ClipboardListener;
 import clipboard.FileHandler;
 import clipboard.FileListener;
+import message.Message;
 import monitor.Monitor;
 
 public class Initiator {
@@ -167,6 +168,9 @@ public class Initiator {
 		if (tmp != null) {
 			previousMonitor = currentMonitor; // save previous
 			currentMonitor = tmp;
+			if (previousMonitor != MainGUI.initiatorMonitor)
+				messageSender.sendMessage(
+						new Message(Message.LEAVE).getBytes(), previousMonitor);
 			if (currentMonitor == MainGUI.initiatorMonitor) {
 				control.pause();
 				edgeThread.unpause();

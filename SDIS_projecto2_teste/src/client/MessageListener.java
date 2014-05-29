@@ -30,7 +30,6 @@ public class MessageListener extends Thread {
 				Client.eventHandler.addMessages(messages);
 				messages.clear();
 				Client.edgeDetect.unpause();
-				Client.statusGUI.setActivity(true);
 			} catch (IOException e) {
 				// socket closed (do nothing)
 			}

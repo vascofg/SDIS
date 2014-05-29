@@ -106,7 +106,6 @@ public class Client {
 
 	static void onEdge(byte edge) {
 		edgeDetect.pause();
-		statusGUI.setActivity(false);
 		messageSender.addMessage(Message.edge(edge));
 	}
 }

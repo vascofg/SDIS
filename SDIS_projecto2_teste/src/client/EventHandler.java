@@ -66,6 +66,7 @@ public class EventHandler extends Thread {
 				case Message.CONNECT:
 					Client.initiatorAddress = msg.getRemoteAddress();
 					Client.messageSender.addMessage(Message.resolution());
+					Client.statusGUI.setActivity(true);
 					break;
 				case Message.DISCONNECT:
 					Client.exit();
@@ -90,6 +91,9 @@ public class EventHandler extends Thread {
 					Client.fileListener.availableContentType = msg
 							.getContentType();
 					Client.statusGUI.getClipboard.setEnabled(true);
+					break;
+				case Message.LEAVE:
+					Client.statusGUI.setActivity(false);
 					break;
 				default:
 					System.out.println("Got unexpected message: "

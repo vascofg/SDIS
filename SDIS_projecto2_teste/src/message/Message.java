@@ -31,6 +31,7 @@ public class Message {
 	public static final byte CLIPBOARD_HAVE = 12;
 	public static final byte CLIPBOARD_GET = 13;
 	public static final byte CLIPBOARD_ANNOUNCE = 14;
+	public static final byte LEAVE = 15;
 
 	private static final byte AVERAGE_NO_BYTES = 6; // número previsto médio de
 													// bytes por msg
@@ -66,6 +67,7 @@ public class Message {
 		case CONNECT:
 		case DISCONNECT:
 		case ALIVE:
+		case LEAVE:
 			return 1;
 		default:
 			return 0;
@@ -162,6 +164,7 @@ public class Message {
 		case ALIVE:
 		case CLIPBOARD_HAVE:
 		case CLIPBOARD_GET:
+		case LEAVE:
 			return true;
 		default:
 			return false;
