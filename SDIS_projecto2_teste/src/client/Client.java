@@ -100,7 +100,6 @@ public class Client {
 	}
 
 	public static void exit() {
-		// TODO: enviar mensagem disconnect
 		statusGUI.dispose();
 		eventHandler.interrupt();
 		edgeDetect.interrupt();

@@ -52,7 +52,6 @@ public class MessageSender extends Thread implements SendClipboardMessage {
 				} catch (NullPointerException e) // entretanto desligou:
 													// descarta
 				{
-					// TODO: é preciso fazer alguma coisa aqui?
 				}
 				messageList.clear();
 
@@ -66,9 +65,9 @@ public class MessageSender extends Thread implements SendClipboardMessage {
 	}
 
 	// sends message to specific monitor immediately
-	public void sendMessage(byte[] msgBytes, Monitor monitor) {
+	public void sendMessage(byte[] msgBytes, InetAddress addr) {
 		DatagramPacket packet = new DatagramPacket(msgBytes, msgBytes.length,
-				monitor.getIp(), Initiator.port);
+				addr, Initiator.port);
 		try {
 			Initiator.socket.send(packet);
 		} catch (IOException e) {
@@ -80,7 +79,7 @@ public class MessageSender extends Thread implements SendClipboardMessage {
 		byte[] msgBytes = message.getBytes();
 		for (Monitor mon : monitors)
 			if (mon.getIp() != null)
-				sendMessage(msgBytes, mon);
+				sendMessage(msgBytes, mon.getIp());
 	}
 
 	// send message to all except one peer
@@ -89,7 +88,7 @@ public class MessageSender extends Thread implements SendClipboardMessage {
 		byte[] msgBytes = message.getBytes();
 		for (Monitor mon : monitors)
 			if (mon.getIp() != null && !mon.getIp().equals(except))
-				sendMessage(msgBytes, mon);
+				sendMessage(msgBytes, mon.getIp());
 	}
 
 	@Override

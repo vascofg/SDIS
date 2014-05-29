@@ -175,7 +175,7 @@ public class Initiator {
 			currentMonitor = tmp;
 			if (previousMonitor != MainGUI.initiatorMonitor)
 				messageSender.sendMessage(
-						new Message(Message.LEAVE).getBytes(), previousMonitor);
+						new Message(Message.LEAVE).getBytes(), previousMonitor.getIp());
 			if (currentMonitor == MainGUI.initiatorMonitor) {
 				control.pause();
 				edgeThread.unpause();
@@ -236,7 +236,6 @@ public class Initiator {
 		System.out.println("TIMEOUT");
 		// currentMonitor = previousMonitor;
 		// if (currentMonitor == Gui.initiatorMonitor) {
-		// TODO: set current monitor as null
 		currentMonitor = MainGUI.initiatorMonitor;
 		control.pause();
 		edgeThread.unpause();

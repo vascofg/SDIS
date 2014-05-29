@@ -16,7 +16,7 @@ public class MessageListener extends Thread {
 
 	@Override
 	public void run() {
-		byte[] buf = new byte[256]; // TODO: definir tamanho máximo da mensagem
+		byte[] buf = new byte[256];
 		DatagramPacket packet = new DatagramPacket(buf, buf.length);
 		LinkedList<Message> messages = new LinkedList<>();
 		while (go) {
