@@ -30,6 +30,7 @@ public class Client {
 	static StatusGUI statusGUI;
 	static final int port = 44444;
 	static final int clipboardPort = 44445;
+	static boolean controllingScreen;
 
 	static Point screenCenter;
 
@@ -42,12 +43,16 @@ public class Client {
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
 
+	static Dimension screenRes;
+
 	public static void main(String[] args) {
 		try {
 			socket = new DatagramSocket(port);
 			r = new Robot();
 
-			Dimension screenRes = Toolkit.getDefaultToolkit().getScreenSize();
+			controllingScreen = false;
+
+			screenRes = Toolkit.getDefaultToolkit().getScreenSize();
 			screenCenter = new Point(screenRes.width / 2, screenRes.height / 2);
 
 			eventHandler = new EventHandler();
@@ -95,7 +100,7 @@ public class Client {
 	}
 
 	public static void exit() {
-		//TODO: enviar mensagem disconnect
+		// TODO: enviar mensagem disconnect
 		statusGUI.dispose();
 		eventHandler.interrupt();
 		edgeDetect.interrupt();
@@ -104,18 +109,20 @@ public class Client {
 		fileHandler.interrupt();
 		fileListener.interrupt();
 	}
-	
+
 	public static void leaveScreen() {
 		Client.statusGUI.setActivity(false);
+		controllingScreen = false;
 		edgeDetect.pause();
 	}
-	
+
 	public static void joinScreen() {
 		Client.statusGUI.setActivity(true);
+		controllingScreen = true;
 		edgeDetect.unpause();
 	}
 
-	static void onEdge(byte edge) {
-		messageSender.addMessage(Message.edge(edge));
+	static void onEdge(byte edge, int percentage) {
+		messageSender.addMessage(Message.edge(edge, percentage));
 	}
 }

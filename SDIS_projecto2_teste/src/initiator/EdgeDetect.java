@@ -1,9 +1,7 @@
 package initiator;
 
-import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.Toolkit;
 
 public class EdgeDetect extends Thread {
 
@@ -17,15 +15,15 @@ public class EdgeDetect extends Thread {
 	public static final byte EDGE_BOTTOM = 4;
 
 	public EdgeDetect() {
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		maxPos = new Point(screenSize.width - 1, screenSize.height - 1); // position
-																			// is
-																			// 0
-																			// based,
-																			// size
-																			// is
-																			// 1
-																			// based
+		maxPos = new Point(Initiator.screenRes.width - 1,
+				Initiator.screenRes.height - 1); // position
+		// is
+		// 0
+		// based,
+		// size
+		// is
+		// 1
+		// based
 	}
 
 	@Override
@@ -41,14 +39,19 @@ public class EdgeDetect extends Thread {
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();
-			if (currentPos.x == 0)
-				Initiator.onEdge(EDGE_LEFT);
-			else if (currentPos.x == maxPos.x)
-				Initiator.onEdge(EDGE_RIGHT);
-			else if (currentPos.y == 0)
-				Initiator.onEdge(EDGE_TOP);
-			else if (currentPos.y == maxPos.y)
-				Initiator.onEdge(EDGE_BOTTOM);
+			if (currentPos.x <= 0) {
+				int percentage = currentPos.y * 100 / maxPos.y;
+				Initiator.onEdge(EDGE_LEFT, percentage);
+			} else if (currentPos.x >= maxPos.x) {
+				int percentage = currentPos.y * 100 / maxPos.y;
+				Initiator.onEdge(EDGE_RIGHT, percentage);
+			} else if (currentPos.y <= 0) {
+				int percentage = currentPos.x * 100 / maxPos.x;
+				Initiator.onEdge(EDGE_TOP, percentage);
+			} else if (currentPos.y >= maxPos.y) {
+				int percentage = currentPos.x * 100 / maxPos.x;
+				Initiator.onEdge(EDGE_BOTTOM, percentage);
+			}
 		}
 	}
 

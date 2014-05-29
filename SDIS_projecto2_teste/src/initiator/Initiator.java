@@ -6,6 +6,7 @@ import gui.StatusGUI;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Toolkit;
@@ -21,6 +22,7 @@ import java.net.SocketException;
 
 import javax.swing.JFrame;
 
+import initiator.EdgeDetect;
 import clipboard.ClipboardListener;
 import clipboard.FileHandler;
 import clipboard.FileListener;
@@ -62,9 +64,12 @@ public class Initiator {
 	static final int port = 44444;
 	static final int clipboardPort = 44445;
 
+	static Dimension screenRes;
+
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
 
 	public static void main(String[] args) throws AWTException {
+		screenRes = Toolkit.getDefaultToolkit().getScreenSize();
 		MainGUI.init();
 
 		r = new Robot();
@@ -149,7 +154,7 @@ public class Initiator {
 		statusGUI.setVisible(true);
 	}
 
-	static void onEdge(byte edge) {
+	static void onEdge(byte edge, int percentage) {
 		Monitor tmp = null;
 		switch (edge) {
 		case EdgeDetect.EDGE_LEFT:
@@ -175,9 +180,27 @@ public class Initiator {
 				control.pause();
 				edgeThread.unpause();
 				disableWindow();
+				switch (edge) {
+				case EdgeDetect.EDGE_RIGHT:
+					Initiator.r.mouseMove(1, Initiator.screenRes.height
+							* percentage / 100);
+					break;
+				case EdgeDetect.EDGE_LEFT:
+					Initiator.r.mouseMove(Initiator.screenRes.width - 1,
+							Initiator.screenRes.height * percentage / 100);
+					break;
+				case EdgeDetect.EDGE_BOTTOM:
+					Initiator.r.mouseMove(Initiator.screenRes.width
+							* percentage / 100, 1);
+					break;
+				case EdgeDetect.EDGE_TOP:
+					Initiator.r.mouseMove(Initiator.screenRes.width
+							* percentage / 100, Initiator.screenRes.height - 1);
+					break;
+				}
 			} else {
 				edgeThread.pause();
-				control.newConnection();
+				control.newConnection(edge, percentage);
 			}
 		}
 	}
@@ -202,7 +225,8 @@ public class Initiator {
 		statusGUI.setActivity(true);
 	}
 
-	public static void connected() {
+	public static void connected(byte edge, int percentage) {
+		Initiator.messageSender.addMessage(Message.edge(edge, percentage));
 		enableWindow();
 	}
 

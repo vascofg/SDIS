@@ -34,7 +34,29 @@ public class EventHandler extends Thread {
 		while (go) {
 			try {
 				msg = messageQueue.take();
-				switch (msg.getType()) {
+				byte msgType = msg.getType();
+				switch (msgType) {
+				case Message.EDGE:
+					int percentage = msg.getPercentage();
+					switch (msg.getEdge()) {
+					case EdgeDetect.EDGE_RIGHT:
+						Client.r.mouseMove(1, Client.screenRes.height
+								* percentage / 100);
+						break;
+					case EdgeDetect.EDGE_LEFT:
+						Client.r.mouseMove(Client.screenRes.width - 1,
+								Client.screenRes.height * percentage / 100);
+						break;
+					case EdgeDetect.EDGE_BOTTOM:
+						Client.r.mouseMove(Client.screenRes.width * percentage
+								/ 100, 1);
+						break;
+					case EdgeDetect.EDGE_TOP:
+						Client.r.mouseMove(Client.screenRes.width * percentage
+								/ 100, Client.screenRes.height - 1);
+						break;
+					}
+					break;
 				case Message.MOUSE_MOVE:
 					mouseDelta = msg.getMouseDelta();
 					currentPos = MouseInfo.getPointerInfo().getLocation();
@@ -61,8 +83,12 @@ public class EventHandler extends Thread {
 					argument = msg.getKeyCode();
 					Client.r.keyRelease(argument);
 					break;
-				// TODO: quando ligar, passar ponto do ecrã para dar ideia de
-				// continuidade (ponto/res*100)
+				case Message.ALIVE:
+					Client.messageSender.addMessage(new Message(Message.ALIVE));
+					break;
+				case Message.LEAVE:
+					Client.leaveScreen();
+					break;
 				case Message.CONNECT:
 					Client.initiatorAddress = msg.getRemoteAddress();
 					Client.messageSender.addMessage(Message.resolution());
@@ -70,9 +96,6 @@ public class EventHandler extends Thread {
 					break;
 				case Message.DISCONNECT:
 					Client.exit();
-					break;
-				case Message.ALIVE:
-					Client.messageSender.addMessage(new Message(Message.ALIVE));
 					break;
 				case Message.CLIPBOARD_ANNOUNCE:
 					remoteAddr = msg.getAddress();
@@ -91,9 +114,6 @@ public class EventHandler extends Thread {
 					Client.fileListener.availableContentType = msg
 							.getContentType();
 					Client.statusGUI.getClipboard.setEnabled(true);
-					break;
-				case Message.LEAVE:
-					Client.leaveScreen();
 					break;
 				default:
 					System.out.println("Got unexpected message: "

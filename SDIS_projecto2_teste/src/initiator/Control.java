@@ -17,6 +17,9 @@ public class Control extends Thread {
 	static int retries;
 	static final int retryDelay = 500;
 
+	private byte edge;
+	private int percentage;
+
 	@Override
 	public void run() {
 		while (go) {
@@ -45,8 +48,10 @@ public class Control extends Thread {
 		}
 	}
 
-	public synchronized void newConnection() {
+	public synchronized void newConnection(byte edge, int percentage) {
 		connected = false;
+		this.edge = edge;
+		this.percentage = percentage;
 		retries = numRetries; // reset tries
 		unpause(); // continue thread
 	}
@@ -58,16 +63,16 @@ public class Control extends Thread {
 			// CLIPBOARD_HAVE)
 			if (msgType != Message.CLIPBOARD_HAVE
 					&& !message.getRemoteAddress().equals(
-							Initiator.currentMonitor))
+							Initiator.currentMonitor.getIp()))
 				continue;
 			switch (msgType) {
 			case Message.EDGE:
-				Initiator.onEdge(message.getEdge());
+				Initiator.onEdge(message.getEdge(), message.getPercentage());
 				break;
 			case Message.RESOLUTION:
 				if (!threadSuspended) {
 					connected = true;
-					Initiator.connected();
+					Initiator.connected(edge, percentage);
 				}
 				Dimension dim = message.getResolution();
 				System.out.println("Width: " + dim.width);
