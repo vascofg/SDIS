@@ -8,7 +8,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class monitorpanel extends JPanel {
+public class MonitorPanel extends JPanel {
 
 	/**
 	 * 
@@ -16,7 +16,7 @@ public class monitorpanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	BufferedImage buffas;
 
-	public monitorpanel() {
+	public MonitorPanel() {
 		try {
 			buffas = ImageIO.read(new File("Icon_pc.png"));
 		} catch (IOException e) {

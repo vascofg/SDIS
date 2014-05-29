@@ -1,6 +1,7 @@
 package initiator;
 
-import gui.Gui;
+import gui.MainGUI;
+import gui.StatusGUI;
 
 import java.awt.AWTException;
 import java.awt.Color;
@@ -9,6 +10,8 @@ import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.Window.Type;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -18,6 +21,9 @@ import java.net.SocketException;
 
 import javax.swing.JFrame;
 
+import clipboard.ClipboardListener;
+import clipboard.FileHandler;
+import clipboard.FileListener;
 import monitor.Monitor;
 
 public class Initiator {
@@ -25,8 +31,8 @@ public class Initiator {
 	static int absoluteCenterX, absoluteCenterY, relativeCenterX,
 			relativeCenterY;
 
-	static JFrame frame;
-	static JFrame closeFrame;
+	static JFrame eventCaptureFrame;
+	static StatusGUI statusGUI;
 
 	static Robot r;
 
@@ -48,12 +54,17 @@ public class Initiator {
 
 	static Control control;
 
+	static FileHandler fileHandler;
+
+	static FileListener fileListener;
+
 	static final int port = 44444;
+	static final int clipboardPort = 44445;
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
 
 	public static void main(String[] args) throws AWTException {
-		Gui.init();
+		MainGUI.init();
 
 		r = new Robot();
 
@@ -72,30 +83,21 @@ public class Initiator {
 		final Cursor blankCursor = Toolkit.getDefaultToolkit()
 				.createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 
-		frame = new JFrame();
-		frame.setResizable(false);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setUndecorated(true);
-		frame.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
-		frame.setType(Type.UTILITY);
-		frame.getContentPane().setCursor(blankCursor);
-		frame.setAlwaysOnTop(true);
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		frame.setFocusTraversalKeysEnabled(false); // allow capture of tab key
-		frame.addMouseListener(EventListener.mouseAdapter);
-		frame.addMouseMotionListener(EventListener.mouseAdapter);
-		frame.addMouseWheelListener(EventListener.mouseAdapter);
-		frame.addKeyListener(EventListener.keyAdapter);
-
-		closeFrame = new JFrame("CLOSE");
-		closeFrame.setResizable(false);
-		closeFrame.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				exit();
-				super.windowClosed(e);
-			}
-		});
+		eventCaptureFrame = new JFrame();
+		eventCaptureFrame.setResizable(false);
+		eventCaptureFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		eventCaptureFrame.setUndecorated(true);
+		eventCaptureFrame.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.01f));
+		eventCaptureFrame.setType(Type.UTILITY);
+		eventCaptureFrame.getContentPane().setCursor(blankCursor);
+		eventCaptureFrame.setAlwaysOnTop(true);
+		eventCaptureFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		eventCaptureFrame.setFocusTraversalKeysEnabled(false); // allow capture
+																// of tab key
+		eventCaptureFrame.addMouseListener(EventListener.mouseAdapter);
+		eventCaptureFrame.addMouseMotionListener(EventListener.mouseAdapter);
+		eventCaptureFrame.addMouseWheelListener(EventListener.mouseAdapter);
+		eventCaptureFrame.addKeyListener(EventListener.keyAdapter);
 
 		edgeThread = new EdgeDetect();
 		// edgeThread.start();
@@ -111,14 +113,39 @@ public class Initiator {
 		control.pause();
 		control.start();
 
+		statusGUI = StatusGUI.getInstance();
+		statusGUI.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				exit();
+				super.windowClosed(e);
+			}
+		});
+		statusGUI.setActivity(true);
+		statusGUI.getClipboard.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				fileListener.requestFile();
+			}
+		});
+
+		fileHandler = new FileHandler(clipboardPort);
+		fileHandler.start();
+
+		fileListener = new FileListener(clipboardPort);
+		fileListener.start();
+
 		messageSender.start();
 		messageListener.start();
+
+		Toolkit.getDefaultToolkit().getSystemClipboard()
+				.addFlavorListener(new ClipboardListener(messageSender));
 	}
 
 	public static void monitorsReady() {
-		currentMonitor = Gui.initiatorMonitor;
+		currentMonitor = MainGUI.initiatorMonitor;
 		edgeThread.start();
-		closeFrame.setVisible(true);
+		statusGUI.setVisible(true);
 	}
 
 	static void onEdge(byte edge) {
@@ -140,7 +167,7 @@ public class Initiator {
 		if (tmp != null) {
 			previousMonitor = currentMonitor; // save previous
 			currentMonitor = tmp;
-			if (currentMonitor == Gui.initiatorMonitor) {
+			if (currentMonitor == MainGUI.initiatorMonitor) {
 				control.pause();
 				edgeThread.unpause();
 				disableWindow();
@@ -152,21 +179,23 @@ public class Initiator {
 	}
 
 	static void enableWindow() {
-		frame.setVisible(true);
+		eventCaptureFrame.setVisible(true);
 		// recalculate center points
-		relativeCenterX = frame.getSize().width / 2;
-		relativeCenterY = frame.getSize().height / 2;
-		absoluteCenterX = relativeCenterX + frame.getLocation().x;
-		absoluteCenterY = relativeCenterY + frame.getLocation().y;
+		relativeCenterX = eventCaptureFrame.getSize().width / 2;
+		relativeCenterY = eventCaptureFrame.getSize().height / 2;
+		absoluteCenterX = relativeCenterX + eventCaptureFrame.getLocation().x;
+		absoluteCenterY = relativeCenterY + eventCaptureFrame.getLocation().y;
 		// move to center
 		r.mouseMove(absoluteCenterX, absoluteCenterY);
 		// click to grab focus
 		// r.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 		// r.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		statusGUI.setActivity(false);
 	}
 
 	static void disableWindow() {
-		frame.setVisible(false);
+		eventCaptureFrame.setVisible(false);
+		statusGUI.setActivity(true);
 	}
 
 	public static void connected() {
@@ -179,8 +208,8 @@ public class Initiator {
 		System.out.println("TIMEOUT");
 		// currentMonitor = previousMonitor;
 		// if (currentMonitor == Gui.initiatorMonitor) {
-		//TODO: set current monitor as null
-		currentMonitor = Gui.initiatorMonitor;
+		// TODO: set current monitor as null
+		currentMonitor = MainGUI.initiatorMonitor;
 		control.pause();
 		edgeThread.unpause();
 		disableWindow();
@@ -188,13 +217,15 @@ public class Initiator {
 	}
 
 	public static void exit() {
-		control.disconnectAll(Gui.ls);
-		frame.dispose();
-		closeFrame.dispose();
+		control.disconnectAll();
+		eventCaptureFrame.dispose();
+		statusGUI.dispose();
 		edgeThread.interrupt();
 		eventHandler.interrupt();
 		messageSender.interrupt();
 		messageListener.interrupt();
 		control.interrupt();
+		fileHandler.interrupt();
+		fileListener.interrupt();
 	}
 }

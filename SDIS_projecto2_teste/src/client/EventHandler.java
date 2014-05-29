@@ -2,6 +2,8 @@ package client;
 
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -28,6 +30,7 @@ public class EventHandler extends Thread {
 		Message msg;
 		Point mouseDelta, currentPos;
 		int argument;
+		InetAddress remoteAddr;
 		while (go) {
 			try {
 				msg = messageQueue.take();
@@ -58,23 +61,43 @@ public class EventHandler extends Thread {
 					argument = msg.getKeyCode();
 					Client.r.keyRelease(argument);
 					break;
-				//TODO: quando ligar, passar ponto do ecrã para dar ideia de continuidade (ponto/res*100)
+				// TODO: quando ligar, passar ponto do ecrã para dar ideia de
+				// continuidade (ponto/res*100)
 				case Message.CONNECT:
-					Client.initiatorAddress = msg.getAddress();
-					Client.messageSender.addMessage(new Message(
-							Message.RESOLUTION, null));
+					Client.initiatorAddress = msg.getRemoteAddress();
+					Client.messageSender.addMessage(Message.resolution());
 					break;
 				case Message.DISCONNECT:
 					Client.exit();
 					break;
 				case Message.ALIVE:
-					Client.messageSender
-							.addMessage(new Message(Message.ALIVE, null));
+					Client.messageSender.addMessage(new Message(Message.ALIVE));
+					break;
+				case Message.CLIPBOARD_ANNOUNCE:
+					remoteAddr = msg.getAddress();
+					Client.fileListener.hostAddress = remoteAddr;
+					Client.statusGUI.setClipboardContent(msg.getContentType(),
+							remoteAddr);
+					Client.fileListener.availableContentType = msg
+							.getContentType();
+					Client.statusGUI.getClipboard.setEnabled(true);
+					break;
+				case Message.CLIPBOARD_HAVE:
+					remoteAddr = msg.getRemoteAddress();
+					Client.fileListener.hostAddress = remoteAddr;
+					Client.statusGUI.setClipboardContent(msg.getContentType(),
+							remoteAddr);
+					Client.fileListener.availableContentType = msg
+							.getContentType();
+					Client.statusGUI.getClipboard.setEnabled(true);
 					break;
 				default:
-					System.out.println("Got unexpected message: " + msg.getType());
+					System.out.println("Got unexpected message: "
+							+ msg.getType());
 				}
 			} catch (InterruptedException e) {
+			} catch (UnknownHostException e) {
+				System.out.println("Unknown host getting clipboard announcer");
 			}
 		}
 	}

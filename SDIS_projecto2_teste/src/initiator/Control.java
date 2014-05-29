@@ -1,12 +1,14 @@
 package initiator;
 
+import gui.MainGUI;
+
 import java.awt.Dimension;
-import java.util.Collection;
+import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import clipboard.ClipboardListener;
 import message.Message;
-import monitor.Monitor;
 
 public class Control extends Thread {
 
@@ -30,10 +32,10 @@ public class Control extends Thread {
 
 				if (!connected)
 					Initiator.messageSender.addMessage(new Message(
-							Message.CONNECT, null));
+							Message.CONNECT));
 				else
 					Initiator.messageSender.addMessage(new Message(
-							Message.ALIVE, null));
+							Message.ALIVE));
 
 				Thread.sleep(retryDelay);
 			} catch (InterruptedException e) {
@@ -53,7 +55,6 @@ public class Control extends Thread {
 	public void handleMessages(List<Message> messages) {
 		for (Message message : messages) {
 			switch (message.getType()) {
-			// TODO: FAZER
 			case Message.EDGE:
 				Initiator.onEdge(message.getEdge());
 				break;
@@ -69,20 +70,27 @@ public class Control extends Thread {
 			case Message.DISCONNECT:
 				break;
 			case Message.ALIVE:
-				retries = numRetries; //reset retries
+				retries = numRetries; // reset retries
 				break;
 			case Message.CLIPBOARD_HAVE:
-				//TODO: enviar para todos os peers mensagem
+				InetAddress remoteAddr = message.getRemoteAddress();
+				byte contentType = message.getContentType();
+				Initiator.messageSender.sendMessageToAllOthers(
+						Message.announceClipboard(contentType, remoteAddr),
+						MainGUI.ls, remoteAddr);
+				Initiator.fileListener.hostAddress = remoteAddr;
+				Initiator.statusGUI
+						.setClipboardContent(contentType, remoteAddr);
+				Initiator.fileListener.availableContentType = contentType;
+				Initiator.statusGUI.getClipboard.setEnabled(true);
 				break;
 			}
 		}
 	}
-	
-	public void disconnectAll(Collection<Monitor> monitors) {
-		Message msg = new Message(Message.DISCONNECT, null);
-		for (Monitor mon : monitors)
-			if (mon.getIp() != null)
-				Initiator.messageSender.sendMessage(msg, mon);
+
+	public void disconnectAll() {
+		Message msg = new Message(Message.DISCONNECT);
+		Initiator.messageSender.sendMessageToAll(msg, MainGUI.ls);
 	}
 
 	@Override

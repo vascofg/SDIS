@@ -1,6 +1,5 @@
 package client;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.LinkedList;
@@ -31,7 +30,7 @@ public class MessageListener extends Thread {
 				Client.eventHandler.addMessages(messages);
 				messages.clear();
 				Client.edgeDetect.unpause();
-				Client.frame.getContentPane().setBackground(Color.green);
+				Client.statusGUI.setActivity(true);
 			} catch (IOException e) {
 				// socket closed (do nothing)
 			}

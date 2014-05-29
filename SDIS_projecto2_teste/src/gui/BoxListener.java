@@ -26,7 +26,7 @@ public class BoxListener implements MouseListener {
 	public void mousePressed(MouseEvent arg0) {
 		JPanel btnPanel = (JPanel) arg0.getSource();
 		System.out.println(btnPanel.getName());
-		System.out.println(Gui.list.getSelectedValue());
+		System.out.println(MainGUI.list.getSelectedValue());
 
 		if (clied) { // disconnects the Monitor
 			pp.setBackground(Color.WHITE);
@@ -69,12 +69,12 @@ public class BoxListener implements MouseListener {
 	 */
 	private void checkSurrounds(String name) {
 		int id = Integer.parseInt(name);
-		int tamanho = Gui.tamanho;
+		int tamanho = MainGUI.tamanho;
 		boolean inst = false;
 		Monitor mon = null;
 
 		if (((id + 1) % tamanho) != 0
-				&& (Gui.panels.get(id + 1).getBackground().equals(Color.BLACK) || Gui.panels
+				&& (MainGUI.panels.get(id + 1).getBackground().equals(Color.BLACK) || MainGUI.panels
 						.get(id + 1).getBackground().equals(Color.GREEN))) { // check
 																				// right
 
@@ -86,10 +86,10 @@ public class BoxListener implements MouseListener {
 
 			// connect to adjacent monitor
 			connect(mon, id + 1, 0);
-			Gui.panels.get(id).setBackground(Color.BLACK);
+			MainGUI.panels.get(id).setBackground(Color.BLACK);
 
 		} else if (((id + 1) % tamanho) != 1
-				&& (Gui.panels.get(id - 1).getBackground().equals(Color.BLACK) || Gui.panels
+				&& (MainGUI.panels.get(id - 1).getBackground().equals(Color.BLACK) || MainGUI.panels
 						.get(id - 1).getBackground().equals(Color.GREEN))) { // check
 																				// left
 
@@ -101,11 +101,11 @@ public class BoxListener implements MouseListener {
 
 			// connect to adjacent monitor
 			connect(mon, id - 1, 1);
-			Gui.panels.get(id).setBackground(Color.BLACK);
+			MainGUI.panels.get(id).setBackground(Color.BLACK);
 
 		} else if ((id / tamanho) != 0
-				&& (Gui.panels.get(id - tamanho).getBackground()
-						.equals(Color.BLACK) || Gui.panels.get(id - tamanho)
+				&& (MainGUI.panels.get(id - tamanho).getBackground()
+						.equals(Color.BLACK) || MainGUI.panels.get(id - tamanho)
 						.getBackground().equals(Color.GREEN))) { // check top
 
 			// create monitor
@@ -116,11 +116,11 @@ public class BoxListener implements MouseListener {
 
 			// connect to adjacent monitor
 			connect(mon, id - tamanho, 2);
-			Gui.panels.get(id).setBackground(Color.BLACK);
+			MainGUI.panels.get(id).setBackground(Color.BLACK);
 
 		} else if (((id / tamanho) != tamanho - 1)
-				&& (Gui.panels.get(id + tamanho).getBackground()
-						.equals(Color.BLACK) || Gui.panels.get(id + tamanho)
+				&& (MainGUI.panels.get(id + tamanho).getBackground()
+						.equals(Color.BLACK) || MainGUI.panels.get(id + tamanho)
 						.getBackground().equals(Color.GREEN))) { // check bottom
 
 			// create monitor
@@ -131,7 +131,7 @@ public class BoxListener implements MouseListener {
 
 			// connect to adjacent monitor
 			connect(mon, id + tamanho, 3);
-			Gui.panels.get(id).setBackground(Color.BLACK);
+			MainGUI.panels.get(id).setBackground(Color.BLACK);
 
 		}
 	}
@@ -141,7 +141,7 @@ public class BoxListener implements MouseListener {
 	 */
 	private Monitor instamon(int id, String ip, String port) {
 		try {
-			Monitor temp = Gui.ls.get(id);
+			Monitor temp = MainGUI.ls.get(id);
 			ip = JOptionPane.showInputDialog("Input IP address:");
 			temp.setIp(InetAddress.getByName(ip));
 			temp.setPort(Integer.parseInt(port));
@@ -158,7 +158,7 @@ public class BoxListener implements MouseListener {
 	 * direction dir.
 	 */
 	private void connect(Monitor mon, int id, int dir) {
-		Monitor temp = Gui.ls.get(id);
+		Monitor temp = MainGUI.ls.get(id);
 		if (dir == 0) {
 			mon.setRight(temp);
 			temp.setLeft(mon);
@@ -179,7 +179,7 @@ public class BoxListener implements MouseListener {
 	 */
 	private void disconnect(String name) {
 		int id = Integer.parseInt(name);
-		Monitor temp = Gui.ls.get(id);
+		Monitor temp = MainGUI.ls.get(id);
 
 		// disconnect from up
 		if (temp.getUp() != null) {

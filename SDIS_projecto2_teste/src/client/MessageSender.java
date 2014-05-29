@@ -1,5 +1,7 @@
 package client;
 
+import interfaces.SendClipboardMessage;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.LinkedList;
@@ -8,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import message.Message;
 
-public class MessageSender extends Thread {
+public class MessageSender extends Thread implements SendClipboardMessage{
 	private boolean go = true;
 	private LinkedBlockingQueue<Message> messageQueue;
 
@@ -54,5 +56,10 @@ public class MessageSender extends Thread {
 	public synchronized void interrupt() {
 		this.go = false;
 		super.interrupt();
+	}
+
+	@Override
+	public void sendClipboardMessage(Message message) {
+		addMessage(message); //send to initiator
 	}
 }

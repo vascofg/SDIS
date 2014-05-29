@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,26 +28,29 @@ public class Message {
 	public static final byte DISCONNECT = 9;
 	public static final byte RESOLUTION = 10;
 	public static final byte ALIVE = 11;
-	public static final byte CLIPBOARD_HAVE= 12;
+	public static final byte CLIPBOARD_HAVE = 12;
 	public static final byte CLIPBOARD_GET = 13;
+	public static final byte CLIPBOARD_ANNOUNCE = 14;
 
 	private static final byte AVERAGE_NO_BYTES = 6; // número previsto médio de
 													// bytes por msg
 
 	private List<Byte> bytes;
-	private InetAddress address;
+	private InetAddress remoteAddress;
 
-	public InetAddress getAddress() {
-		return address;
+	public InetAddress getRemoteAddress() {
+		return remoteAddress;
 	}
 
-	public void setAddress(InetAddress address) {
-		this.address = address;
+	private void setRemoteAddress(InetAddress address) {
+		this.remoteAddress = address;
 	}
 
 	private static short getMessageLength(byte msgType) { // obtém tamanho da
 															// mensagem por tipo
 		switch (msgType) {
+		case CLIPBOARD_ANNOUNCE:
+			return 6; //type + content type + ip address (4 bytes)
 		case MOUSE_MOVE:
 		case RESOLUTION:
 			return 5;
@@ -57,6 +61,7 @@ public class Message {
 			return 3;
 		case MOUSE_SCROLL:
 		case EDGE:
+		case CLIPBOARD_HAVE:
 			return 2;
 		case CONNECT:
 		case DISCONNECT:
@@ -80,7 +85,7 @@ public class Message {
 			bytes.addAll(intToByteList(InputEvent
 					.getMaskForButton(((MouseEvent) event).getButton()), 2));
 			break;
-		case MouseEvent.MOUSE_WHEEL:
+		case MouseWheelEvent.MOUSE_WHEEL:
 			bytes.add(Message.MOUSE_SCROLL);
 			bytes.addAll(intToByteList(
 					((MouseWheelEvent) event).getWheelRotation(), 1));
@@ -100,20 +105,38 @@ public class Message {
 						// update do rato)
 	}
 
-	public Message(byte messageType, Byte edge) { // constructor para mensagens
-													// de controlo
+	public Message(byte messageType) { // constructor para mensagens
+										// de controlo
 		this.bytes = new LinkedList<Byte>();
 		bytes.add(messageType);
-		switch (messageType) {
-		case EDGE:
-			bytes.add(edge);
-			break;
-		case RESOLUTION:
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			bytes.addAll(intToByteList(dim.width, 2));
-			bytes.addAll(intToByteList(dim.height, 2));
-			break;
-		}
+	}
+
+	public static Message resolution() {
+		Message msg = new Message(Message.RESOLUTION);
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		msg.bytes.addAll(intToByteList(dim.width, 2));
+		msg.bytes.addAll(intToByteList(dim.height, 2));
+		return msg;
+	}
+
+	public static Message edge(byte edge) {
+		Message msg = new Message(Message.EDGE);
+		msg.bytes.add(edge);
+		return msg;
+	}
+
+	public static Message haveClipboard(byte contentType) {
+		Message msg = new Message(Message.CLIPBOARD_HAVE);
+		msg.bytes.add(contentType);
+		return msg;
+	}
+
+	public static Message announceClipboard(byte contentType, InetAddress addr) {
+		Message msg = new Message(Message.CLIPBOARD_ANNOUNCE);
+		msg.bytes.add(contentType);
+		for(byte addrByte : addr.getAddress())
+			msg.bytes.add(addrByte);
+		return msg;
 	}
 
 	public Message(List<Byte> bytes) {
@@ -121,12 +144,13 @@ public class Message {
 		this.bytes.addAll(bytes);
 	}
 
-	public Message(Point p) // constructor para mensagem de mouse deltas
+	public static Message mouseDelta(Point p) // constructor para mensagem de
+												// mouse deltas
 	{
-		this.bytes = new LinkedList<Byte>();
-		bytes.add(Message.MOUSE_MOVE);
-		bytes.addAll(intToByteList(p.x, 2)); // x
-		bytes.addAll(intToByteList(p.y, 2)); // y
+		Message msg = new Message(Message.MOUSE_MOVE);
+		msg.bytes.addAll(intToByteList(p.x, 2)); // x
+		msg.bytes.addAll(intToByteList(p.y, 2)); // y
+		return msg;
 	}
 
 	public boolean isControl() {
@@ -230,6 +254,16 @@ public class Message {
 		dim.height = byteArrayToSignedInt(bytes);
 		return dim;
 	}
+	
+	public InetAddress getAddress() throws UnknownHostException {
+		byte[] bytes = new byte[4];
+		Iterator<Byte> t = this.bytes.listIterator(2);
+		bytes[0] = (byte) t.next();
+		bytes[1] = (byte) t.next();
+		bytes[2] = (byte) t.next();
+		bytes[3] = (byte) t.next();
+		return InetAddress.getByAddress(bytes);
+	}
 
 	public byte getEdge() {
 		byte[] bytes = new byte[1];
@@ -237,6 +271,14 @@ public class Message {
 		bytes[0] = (byte) t.next();
 		byte edge = (byte) byteArrayToSignedInt(bytes);
 		return edge;
+	}
+	
+	public byte getContentType() {
+		byte[] bytes = new byte[1];
+		Iterator<Byte> t = this.bytes.listIterator(1);
+		bytes[0] = (byte) t.next();
+		byte contentType = (byte) byteArrayToSignedInt(bytes);
+		return contentType;
 	}
 
 	public static byte[] getPacket(List<Message> messages) {
@@ -266,17 +308,14 @@ public class Message {
 		List<Byte> messageBytes = new LinkedList<>();
 		int i = 0, msgLen;
 		while (i < len) {
-			if(bytes[0] == CLIPBOARD_HAVE) //read to end
-				msgLen = len;
-			else
-				msgLen = Message.getMessageLength(bytes[i]);
+			msgLen = Message.getMessageLength(bytes[i]);
 			for (int j = 0; j < msgLen; j++)
 				messageBytes.add(bytes[i++]);
 
 			currentMessage = new Message(messageBytes);
 			if (currentMessage.isControl()) {
 				// guarda peer de onde veio
-				currentMessage.setAddress(address);
+				currentMessage.setRemoteAddress(address);
 				controlMessages.add(currentMessage);
 			} else
 				eventMessages.add(currentMessage);

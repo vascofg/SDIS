@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.InputMismatchException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import message.Message;
@@ -60,10 +61,10 @@ public class EventHandler extends Thread {
 		}
 	}
 
-	public synchronized Point getMouseDelta() throws Exception {
+	public synchronized Point getMouseDelta() throws InputMismatchException {
 		Point p = new Point(deltaX, deltaY);
 		if (deltaX == 0 && deltaY == 0)
-			throw new Exception();
+			throw new InputMismatchException();
 		deltaX = deltaY = 0;
 		mouseUpdated = false;
 		return p;

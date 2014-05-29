@@ -25,7 +25,7 @@ import javax.swing.SwingConstants;
 
 import monitor.Monitor;
 
-public class Gui {
+public class MainGUI {
 	static JFrame frame;
 	static JPanel panelS;
 	static JPanel panelC;
