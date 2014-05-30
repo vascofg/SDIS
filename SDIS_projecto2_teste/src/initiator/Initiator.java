@@ -68,9 +68,8 @@ public class Initiator {
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
 
-	public static void main(String[] args) throws AWTException {
+	public static void init() throws AWTException {
 		screenRes = Toolkit.getDefaultToolkit().getScreenSize();
-		MainGUI.init();
 
 		r = new Robot();
 

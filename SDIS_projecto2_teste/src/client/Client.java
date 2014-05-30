@@ -45,7 +45,7 @@ public class Client {
 
 	static Dimension screenRes;
 
-	public static void main(String[] args) {
+	public static void init() {
 		try {
 			socket = new DatagramSocket(port);
 			r = new Robot();
@@ -100,13 +100,16 @@ public class Client {
 	}
 
 	public static void exit() {
-		statusGUI.dispose();
-		eventHandler.interrupt();
-		edgeDetect.interrupt();
-		messageListener.interrupt();
-		messageSender.interrupt();
-		fileHandler.interrupt();
-		fileListener.interrupt();
+		try {
+			statusGUI.dispose();
+			eventHandler.interrupt();
+			edgeDetect.interrupt();
+			messageListener.interrupt();
+			messageSender.interrupt();
+			fileHandler.interrupt();
+			fileListener.interrupt();
+		} catch (NullPointerException e) {
+		}
 	}
 
 	public static void leaveScreen() {

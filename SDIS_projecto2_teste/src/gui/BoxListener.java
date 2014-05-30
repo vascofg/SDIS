@@ -28,16 +28,25 @@ public class BoxListener implements MouseListener {
 		JPanel btnPanel = (JPanel) arg0.getSource();
 		System.out.println(btnPanel.getName());
 
-		String ip = MainGUI.list.getSelectedValue().getIp();
-		System.out.println(ip);
+		if(MainGUI.list.getSelectedValue() != null) {
+			String ip = MainGUI.list.getSelectedValue().getIp();
+			System.out.println("IP: " + ip);
 
-		if (clied) { // disconnects the Monitor
-			pp.setBackground(Color.WHITE);
-			disconnect(btnPanel.getName());
-			clied = false;
-		} else { // checks if Monitor can be created, and creates it if possible
-			checkSurrounds(btnPanel.getName());
-			clied = true;
+			if (clied) { // disconnects the Monitor
+				pp.setBackground(Color.WHITE);
+				disconnect(btnPanel.getName());
+				clied = false;
+				MainGUI.list.getSelectedValue().unPlace(btnPanel.getName());
+			} else { // checks if Monitor can be created, and creates it if
+						// possible
+				if (!MainGUI.list.getSelectedValue().isPlaced()) {
+					boolean temp = checkSurrounds(btnPanel.getName());
+					if(temp) {
+						clied = true;
+						MainGUI.list.getSelectedValue().Place(btnPanel.getName());
+					}
+				}
+			}
 		}
 
 	}
@@ -70,7 +79,7 @@ public class BoxListener implements MouseListener {
 	 * Checks surroundings of clicked cell, creates monitor and connects it to
 	 * adjacent ones.
 	 */
-	private void checkSurrounds(String name) {
+	private boolean checkSurrounds(String name) {
 		int id = Integer.parseInt(name);
 		int tamanho = MainGUI.tamanho;
 		boolean inst = false;
@@ -84,7 +93,7 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, "192", "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
 				inst = true;
 			}
 
@@ -100,7 +109,7 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, "192", "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
 				inst = true;
 			}
 
@@ -116,7 +125,7 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, "192", "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
 				inst = true;
 			}
 
@@ -132,7 +141,7 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, "192", "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
 				inst = true;
 			}
 
@@ -141,6 +150,7 @@ public class BoxListener implements MouseListener {
 			MainGUI.panels.get(id).setBackground(Color.BLACK);
 
 		}
+		return inst;
 	}
 
 	/**
@@ -149,7 +159,8 @@ public class BoxListener implements MouseListener {
 	private Monitor instamon(int id, String ip, String port) {
 		try {
 			Monitor temp = MainGUI.ls.get(id);
-			ip = JOptionPane.showInputDialog("Input IP address:");
+			System.out.println(ip);
+			//ip = JOptionPane.showInputDialog("Input IP address:");
 			temp.setIp(InetAddress.getByName(ip));
 			temp.setPort(Integer.parseInt(port));
 			return temp;

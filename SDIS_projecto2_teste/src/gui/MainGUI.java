@@ -29,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
+import client.Client;
 import message.Message;
 import monitor.Monitor;
 
@@ -45,14 +46,15 @@ public class MainGUI {
 	static int vel = 25;
 	static ArrayList<JPanel> panels = new ArrayList<JPanel>();
 	static HttpConnection hC = new HttpConnection();
-	static ArrayList<User> users = new ArrayList<User>();
+	public static ArrayList<User> users = new ArrayList<User>();
 	
 	
-	private static class handelador implements ActionListener {
+	private static class Handler implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
 			if (e.getActionCommand().equals("serv")) {
 				try {
+					Initiator.init();
 					hC.init();
 					frame.setVisible(false);
 					frame.dispose();
@@ -71,6 +73,7 @@ public class MainGUI {
 					hC.setCode(JOptionPane.showInputDialog(frame, "Insert Room code", "Enter room"));
 					frame.setVisible(false);
 					frame.dispose();
+					Client.init();
 					hC.rsp(2);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -142,6 +145,7 @@ public class MainGUI {
 			}
 		}
 		Thread.sleep(500);
+		Initiator.messageSender.checkingReachables=false;
 		for(User user : users) {
 			for(Message temp : MessageSender.msgRec) {
 				if(user.getIps().contains(temp.getRemoteAddress().getHostAddress())) {
@@ -150,6 +154,7 @@ public class MainGUI {
 				}
 			}
 		}
+		MessageSender.msgRec.clear();
 	}
 
 	
@@ -165,7 +170,7 @@ public class MainGUI {
 		frame.getContentPane().add(panelC);
 		frame.setLocationRelativeTo(null);
 		JButton serv = new JButton("Servidor");
-		JButton cli = new JButton("client");
+		JButton cli = new JButton("Client");
 		frame.setResizable(false);
 		cli.setPreferredSize(serv.getPreferredSize());
 		serv.setVerticalAlignment(SwingConstants.TOP);
@@ -175,8 +180,8 @@ public class MainGUI {
 		panelC.add(cli);
 		// serv.setLocation(null);
 		// cli.setLocation(null);
-		serv.addActionListener(new handelador());
-		cli.addActionListener(new handelador());
+		serv.addActionListener(new Handler());
+		cli.addActionListener(new Handler());
 		serv.setActionCommand("serv");
 		cli.setActionCommand("cli");
 
@@ -236,7 +241,7 @@ public class MainGUI {
 
 		JButton con = new JButton("Connect");
 		JButton opt = new JButton("Options");
-		JButton ts = new JButton("test");
+		JButton ts = new JButton("Get hosts");
 		JButton ex = new JButton("Exit");
 
 		panelC.setLayout(new GridLayout(4, 1));
@@ -245,10 +250,10 @@ public class MainGUI {
 		panelC.add(ts);
 		panelC.add(ex);
 		
-		ex.addActionListener(new handelador());
-		opt.addActionListener(new handelador());
-		con.addActionListener(new handelador());
-		ts.addActionListener(new handelador());
+		ex.addActionListener(new Handler());
+		opt.addActionListener(new Handler());
+		con.addActionListener(new Handler());
+		ts.addActionListener(new Handler());
 		ex.setActionCommand("exit");
 		con.setActionCommand("con");
 		opt.setActionCommand("opt");
@@ -302,6 +307,10 @@ public class MainGUI {
 			if (mon.getIp() != null)
 				count++;
 		return count;
+	}
+	
+	public static void main(String[] args) {
+		MainGUI.init();
 	}
 
 }

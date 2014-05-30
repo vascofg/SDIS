@@ -62,6 +62,7 @@ public class Control extends Thread {
 			// reject messages which do not come from the currentMonitor (except
 			// CLIPBOARD_HAVE)
 			if (msgType != Message.CLIPBOARD_HAVE
+					&& msgType != Message.ALIVE
 					&& !message.getRemoteAddress().equals(
 							Initiator.currentMonitor.getIp()))
 				continue;
@@ -81,7 +82,7 @@ public class Control extends Thread {
 			case Message.DISCONNECT:
 				break;
 			case Message.ALIVE:
-				if(Initiator.messageSender.checkingReachables) {
+				if (Initiator.messageSender.checkingReachables) {
 					MessageSender.msgRec.add(message);
 				} else {
 					retries = numRetries; // reset retries

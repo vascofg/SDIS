@@ -24,6 +24,7 @@ public class MessageSender extends Thread implements SendClipboardMessage {
 
 	public MessageSender() {
 		messageQueue = new LinkedBlockingQueue<>();
+		msgRec = new ArrayList<>();
 	}
 
 	@Override
