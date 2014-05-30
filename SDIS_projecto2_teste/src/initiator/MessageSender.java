@@ -6,6 +6,7 @@ import interfaces.SendClipboardMessage;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.InputMismatchException;
 import java.util.LinkedList;
@@ -18,6 +19,8 @@ import monitor.Monitor;
 public class MessageSender extends Thread implements SendClipboardMessage {
 	private boolean go = true;
 	private LinkedBlockingQueue<Message> messageQueue;
+	public boolean checkingReachables = false;
+	public static ArrayList<Message> msgRec;
 
 	public MessageSender() {
 		messageQueue = new LinkedBlockingQueue<>();

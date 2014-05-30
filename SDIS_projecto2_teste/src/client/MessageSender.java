@@ -5,6 +5,7 @@ import interfaces.SendClipboardMessage;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,6 +15,7 @@ import message.Message;
 public class MessageSender extends Thread implements SendClipboardMessage {
 	private boolean go = true;
 	private LinkedBlockingQueue<Message> messageQueue;
+	
 
 	public MessageSender() {
 		messageQueue = new LinkedBlockingQueue<>();

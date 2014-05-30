@@ -28,23 +28,8 @@ public class BoxListener implements MouseListener {
 		JPanel btnPanel = (JPanel) arg0.getSource();
 		System.out.println(btnPanel.getName());
 
-		String[] ips = MainGUI.list.getSelectedValue().getIps();
-		for (String ip : ips) {
-			System.out.println(ip);
-			InetAddress addr;
-			try {
-				int pos = ip.indexOf(':');
-				if(pos!=-1)
-					ip = ip.substring(0, pos);
-				addr = InetAddress.getByName(ip);
-				if (addr.isReachable(500))
-					System.out.println("REACHABLE!");
-				else
-					System.out.println("NOT REACHABLE");
-			} catch (IOException e) {
-
-			}
-		}
+		String ip = MainGUI.list.getSelectedValue().getIp();
+		System.out.println(ip);
 
 		if (clied) { // disconnects the Monitor
 			pp.setBackground(Color.WHITE);

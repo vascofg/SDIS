@@ -81,7 +81,11 @@ public class Control extends Thread {
 			case Message.DISCONNECT:
 				break;
 			case Message.ALIVE:
-				retries = numRetries; // reset retries
+				if(Initiator.messageSender.checkingReachables) {
+					MessageSender.msgRec.add(message);
+				} else {
+					retries = numRetries; // reset retries
+				}
 				break;
 			case Message.CLIPBOARD_HAVE:
 				InetAddress remoteAddr = message.getRemoteAddress();

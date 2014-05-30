@@ -3,12 +3,15 @@ package gui;
 import httpServer.HttpConnection;
 import httpServer.User;
 import initiator.Initiator;
+import initiator.MessageSender;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -26,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
+import message.Message;
 import monitor.Monitor;
 
 public class MainGUI {
@@ -113,18 +117,38 @@ public class MainGUI {
 		}
 	}
 	
-	public static void getIps(String txt){
+	public static void getIps(String txt) throws UnknownHostException, InterruptedException{
 		if(txt!=""){
-		String[] uses =txt.split("~");
-		String[] preps=null;
-		model.clear();
-		for(String c: uses){
-			preps= c.split(" ");
-			User temp = new User(preps[0], preps[1]);
-			users.add(temp);
-			model.addElement(temp);
+			String[] uses =txt.split("~");
+			String[] preps=null;
+			model.clear();
+			for(String c: uses){
+				preps= c.split(" ");
+				User temp = new User(preps[0], preps[1]);
+				users.add(temp);
+				model.addElement(temp);
+			}
+			defineMonitors(users);
 		}
-
+	}
+	
+	public static void defineMonitors(ArrayList<User> users) throws InterruptedException, UnknownHostException {
+		byte[] msg = new Message(Message.ALIVE).getBytes();
+		Initiator.messageSender.checkingReachables = true;
+		
+		for(User user : users) {
+			for(String ip : user.getIps()) {
+				Initiator.messageSender.sendMessage(msg, InetAddress.getByName(ip));
+			}
+		}
+		Thread.sleep(500);
+		for(User user : users) {
+			for(Message temp : MessageSender.msgRec) {
+				if(user.getIps().contains(temp.getRemoteAddress().getHostAddress())) {
+					user.setIp(temp.getRemoteAddress().getHostAddress());
+					break;
+				}
+			}
 		}
 	}
 

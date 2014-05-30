@@ -51,7 +51,7 @@ public class Initiator {
 
 	static EventHandler eventHandler;
 
-	static MessageSender messageSender;
+	public static MessageSender messageSender;
 
 	static MessageListener messageListener;
 

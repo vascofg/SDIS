@@ -1,12 +1,15 @@
 package httpServer;
 
+import java.util.ArrayList;
+
 
 public class User {
-	String name, ips;
+	String name, ip;
+	ArrayList<String> ips;
 	
 	public User(String name, String ips) {
 		this.name=name;
-		this.ips=ips;
+		fillIps(ips);
 	}
 
 	@Override
@@ -15,10 +18,29 @@ public class User {
 		return "            " +name + " "+ ips;
 	}
 	
-	public String[] getIps() {
-		String delims = "/";
-		return ips.split(delims); 
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
 	}
 	
+	public ArrayList<String> getIps() {
+		return ips;
+	}
+	
+	public void fillIps(String ip) {
+		ips = new ArrayList<String>();
+		String delims = "/";
+		String[] parsedIps = ip.split(delims);
+		for(String temp : parsedIps) {
+			ips.add(temp);
+		}
+	}
+	
+	public void defineValidMonitors() {
+		
+	}
 	
 }
