@@ -1,9 +1,7 @@
 package client;
 
-import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.Toolkit;
 
 public class EdgeDetect extends Thread {
 
@@ -17,8 +15,7 @@ public class EdgeDetect extends Thread {
 	public static final byte EDGE_BOTTOM = 4;
 
 	public EdgeDetect() {
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		maxPos = new Point(screenSize.width - 1, screenSize.height - 1); // position
+		maxPos = new Point(Client.screenRes.width - 1, Client.screenRes.height - 1); // position
 																			// is
 																			// 0
 																			// based,
@@ -41,20 +38,18 @@ public class EdgeDetect extends Thread {
 			} catch (InterruptedException e) {
 			}
 			currentPos = MouseInfo.getPointerInfo().getLocation();
-			if (currentPos.x == 0) {
-				// move one pixel off the edge (avoid leaving screen instantly
-				// when connected)
-				Client.r.mouseMove(1, currentPos.y);
-				Client.onEdge(EDGE_LEFT);
-			} else if (currentPos.x == maxPos.x) {
-				Client.r.mouseMove(currentPos.x - 1, currentPos.y);
-				Client.onEdge(EDGE_RIGHT);
-			} else if (currentPos.y == 0) {
-				Client.r.mouseMove(currentPos.x, 1);
-				Client.onEdge(EDGE_TOP);
-			} else if (currentPos.y == maxPos.y) {
-				Client.r.mouseMove(currentPos.x, currentPos.y - 1);
-				Client.onEdge(EDGE_BOTTOM);
+			if (currentPos.x <= 0) {
+				int percentage = currentPos.y * 100 / maxPos.y;
+				Client.onEdge(EDGE_LEFT, percentage);
+			} else if (currentPos.x >= maxPos.x) {
+				int percentage = currentPos.y * 100 / maxPos.y;
+				Client.onEdge(EDGE_RIGHT, percentage);
+			} else if (currentPos.y <= 0) {
+				int percentage = currentPos.x * 100 / maxPos.x;
+				Client.onEdge(EDGE_TOP, percentage);
+			} else if (currentPos.y >= maxPos.y) {
+				int percentage = currentPos.x * 100 / maxPos.x;
+				Client.onEdge(EDGE_BOTTOM, percentage);
 			}
 
 		}

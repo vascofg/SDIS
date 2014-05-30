@@ -16,7 +16,7 @@ public class MessageListener extends Thread {
 
 	@Override
 	public void run() {
-		byte[] buf = new byte[256]; // TODO: definir tamanho máximo da mensagem
+		byte[] buf = new byte[256];
 		DatagramPacket packet = new DatagramPacket(buf, buf.length);
 		LinkedList<Message> messages = new LinkedList<>();
 		while (go) {
@@ -29,7 +29,6 @@ public class MessageListener extends Thread {
 				// tratadas pelo event handler)
 				Client.eventHandler.addMessages(messages);
 				messages.clear();
-				Client.edgeDetect.unpause();
 			} catch (IOException e) {
 				// socket closed (do nothing)
 			}

@@ -42,7 +42,6 @@ public class EventHandler extends Thread {
 				default:
 					Initiator.messageSender.addMessage(new Message(event));
 				}
-				// TODO: criar MENSAIGE e adicionar ao sender!
 			} catch (InterruptedException e) { // eventQueue interrompida
 			}
 		}

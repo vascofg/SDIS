@@ -60,7 +60,6 @@ public class FileListener extends Thread {
 				}
 				dis.close();
 				socket.close();
-				// TODO: passar para clipboard
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

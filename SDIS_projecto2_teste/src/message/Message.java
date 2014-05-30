@@ -59,9 +59,9 @@ public class Message {
 		case MOUSE_RELEASE:
 		case KEY_PRESS:
 		case KEY_RELEASE:
+		case EDGE:
 			return 3;
 		case MOUSE_SCROLL:
-		case EDGE:
 		case CLIPBOARD_HAVE:
 			return 2;
 		case CONNECT:
@@ -121,9 +121,10 @@ public class Message {
 		return msg;
 	}
 
-	public static Message edge(byte edge) {
+	public static Message edge(byte edge, int percentage) {
 		Message msg = new Message(Message.EDGE);
 		msg.bytes.add(edge);
+		msg.bytes.addAll(intToByteList(percentage, 1));
 		return msg;
 	}
 
@@ -243,6 +244,14 @@ public class Message {
 		bytes[1] = (byte) t.next();
 		int keyCode = byteArrayToUnsignedInt(bytes);
 		return keyCode;
+	}
+	
+	public int getPercentage() {
+		byte[] bytes = new byte[1];
+		Iterator<Byte> t = this.bytes.listIterator(2);
+		bytes[0] = (byte) t.next();
+		int percentage = byteArrayToUnsignedInt(bytes);
+		return percentage;
 	}
 
 	public Dimension getResolution() {
