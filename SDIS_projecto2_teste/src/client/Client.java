@@ -1,9 +1,5 @@
 package client;
 
-import client.EdgeDetect;
-import clipboard.ClipboardListener;
-import clipboard.FileHandler;
-import clipboard.FileListener;
 import gui.StatusGUI;
 
 import java.awt.AWTException;
@@ -21,6 +17,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 import message.Message;
+import clipboard.ClipboardListener;
+import clipboard.FileHandler;
+import clipboard.FileListener;
 
 public class Client {
 	static DatagramSocket socket;

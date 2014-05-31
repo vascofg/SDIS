@@ -3,11 +3,9 @@ package gui;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import monitor.Monitor;

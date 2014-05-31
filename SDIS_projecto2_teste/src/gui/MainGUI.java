@@ -5,6 +5,7 @@ import httpServer.User;
 import initiator.Initiator;
 import initiator.MessageSender;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -29,9 +30,9 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
-import client.Client;
 import message.Message;
 import monitor.Monitor;
+import client.Client;
 
 public class MainGUI {
 	static JFrame frame;
@@ -47,8 +48,8 @@ public class MainGUI {
 	static ArrayList<JPanel> panels = new ArrayList<JPanel>();
 	static HttpConnection hC = new HttpConnection();
 	public static ArrayList<User> users = new ArrayList<User>();
-	
-	
+	private static String roomCode;
+
 	private static class Handler implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
@@ -58,11 +59,8 @@ public class MainGUI {
 					hC.init();
 					frame.setVisible(false);
 					frame.dispose();
-					initServ("");
-					String temp = hC.rsp(1);
-					JTextArea txtA= new JTextArea(temp);
-					txtA.setEditable(true);
-					JOptionPane.showMessageDialog(frame,txtA );
+					roomCode = hC.rsp(1);
+					initServ();
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -70,7 +68,8 @@ public class MainGUI {
 			} else if (e.getActionCommand().equals("cli")) {
 				try {
 					hC.init();
-					hC.setCode(JOptionPane.showInputDialog(frame, "Insert Room code", "Enter room"));
+					hC.setCode(JOptionPane.showInputDialog(frame,
+							"Insert Room code", "Enter room"));
 					frame.setVisible(false);
 					frame.dispose();
 					Client.init();
@@ -79,7 +78,7 @@ public class MainGUI {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
+
 				// TODO por cenas
 			} else if (e.getActionCommand().equals("exit")) {
 				try {
@@ -101,32 +100,31 @@ public class MainGUI {
 				frame.setVisible(false);
 				frame.dispose();
 				createopt();
-				initServ("");
+				initServ();
 
-			}
-			else if (e.getActionCommand().equals("test")){
-				
+			} else if (e.getActionCommand().equals("test")) {
+
 				try {
 					getIps(hC.rsp(3));
-					
+
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
-				
+
 			}
 
 		}
 	}
-	
-	public static void getIps(String txt) throws UnknownHostException, InterruptedException{
-		if(txt!=""){
-			String[] uses =txt.split("~");
-			String[] preps=null;
+
+	public static void getIps(String txt) throws UnknownHostException,
+			InterruptedException {
+		if (!txt.equals("")) {
+			String[] uses = txt.split("~");
+			String[] preps = null;
 			model.clear();
-			for(String c: uses){
-				preps= c.split(" ");
+			for (String c : uses) {
+				preps = c.split(" ");
 				User temp = new User(preps[0], preps[1]);
 				users.add(temp);
 				model.addElement(temp);
@@ -134,21 +132,24 @@ public class MainGUI {
 			defineMonitors(users);
 		}
 	}
-	
-	public static void defineMonitors(ArrayList<User> users) throws InterruptedException, UnknownHostException {
+
+	public static void defineMonitors(ArrayList<User> users)
+			throws InterruptedException, UnknownHostException {
 		byte[] msg = new Message(Message.ALIVE).getBytes();
 		Initiator.messageSender.checkingReachables = true;
-		
-		for(User user : users) {
-			for(String ip : user.getIps()) {
-				Initiator.messageSender.sendMessage(msg, InetAddress.getByName(ip));
+
+		for (User user : users) {
+			for (String ip : user.getIps()) {
+				Initiator.messageSender.sendMessage(msg,
+						InetAddress.getByName(ip));
 			}
 		}
 		Thread.sleep(500);
-		Initiator.messageSender.checkingReachables=false;
-		for(User user : users) {
-			for(Message temp : MessageSender.msgRec) {
-				if(user.getIps().contains(temp.getRemoteAddress().getHostAddress())) {
+		Initiator.messageSender.checkingReachables = false;
+		for (User user : users) {
+			for (Message temp : MessageSender.msgRec) {
+				if (user.getIps().contains(
+						temp.getRemoteAddress().getHostAddress())) {
 					user.setIp(temp.getRemoteAddress().getHostAddress());
 					break;
 				}
@@ -156,8 +157,6 @@ public class MainGUI {
 		}
 		MessageSender.msgRec.clear();
 	}
-
-	
 
 	public static void init() {
 		frame = new JFrame("init");
@@ -190,8 +189,8 @@ public class MainGUI {
 
 	}
 
-	private static void initServ(String ips) {
-		
+	private static void initServ() {
+
 		frame = new JFrame("Servidor");
 		frame.setResizable(false);
 		panelS = new JPanel();
@@ -208,11 +207,15 @@ public class MainGUI {
 		frame.getContentPane().add(panelC);
 		panelI.setBorder(BorderFactory
 				.createTitledBorder("Available Connections"));
+		panelI.setLayout(new BorderLayout());
 		/*********************** panel i *******************************/
-	
+
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setBorder(BorderFactory.createEmptyBorder(0, 10, -10, 10));
-		panelI.add(new JScrollPane(list));
+		panelI.add(new JScrollPane(list), BorderLayout.CENTER);
+		JPanel temp = new JPanel();
+		temp.add(new JLabel("Room code:"));
+		temp.add(new JTextArea(roomCode));
+		panelI.add(temp, BorderLayout.SOUTH);
 
 		/*********************** panel i *******************************/
 
@@ -249,7 +252,7 @@ public class MainGUI {
 		panelC.add(opt);
 		panelC.add(ts);
 		panelC.add(ex);
-		
+
 		ex.addActionListener(new Handler());
 		opt.addActionListener(new Handler());
 		con.addActionListener(new Handler());
@@ -308,7 +311,7 @@ public class MainGUI {
 				count++;
 		return count;
 	}
-	
+
 	public static void main(String[] args) {
 		MainGUI.init();
 	}

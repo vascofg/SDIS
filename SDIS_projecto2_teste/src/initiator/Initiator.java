@@ -22,12 +22,11 @@ import java.net.SocketException;
 
 import javax.swing.JFrame;
 
-import initiator.EdgeDetect;
+import message.Message;
+import monitor.Monitor;
 import clipboard.ClipboardListener;
 import clipboard.FileHandler;
 import clipboard.FileListener;
-import message.Message;
-import monitor.Monitor;
 
 public class Initiator {
 

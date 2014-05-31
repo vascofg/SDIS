@@ -1,7 +1,6 @@
 package httpServer;
 
 import gui.MainGUI;
-import initiator.Initiator;
 
 import java.util.ArrayList;
 
@@ -37,7 +36,7 @@ public class User {
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return "            " +name;
+		return name;
 	}
 	
 	public String getIp() {
