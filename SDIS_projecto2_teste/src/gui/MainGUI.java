@@ -11,6 +11,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -214,7 +216,15 @@ public class MainGUI {
 		panelI.add(new JScrollPane(list), BorderLayout.CENTER);
 		JPanel temp = new JPanel();
 		temp.add(new JLabel("Room code:"));
-		temp.add(new JTextArea(roomCode));
+		JTextArea roomCodeTArea = new JTextArea(roomCode);
+		roomCodeTArea.setEditable(false);
+		roomCodeTArea.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				((JTextArea) e.getComponent()).selectAll();
+			}
+		});
+		temp.add(roomCodeTArea);
 		panelI.add(temp, BorderLayout.SOUTH);
 
 		/*********************** panel i *******************************/

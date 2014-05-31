@@ -91,6 +91,7 @@ public class Client {
 			Toolkit.getDefaultToolkit().getSystemClipboard()
 					.addFlavorListener(new ClipboardListener(messageSender));
 
+			statusGUI.setActivity(false);
 			statusGUI.setVisible(true);
 		} catch (SocketException | AWTException e1) {
 			// TODO Auto-generated catch block
