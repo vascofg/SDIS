@@ -15,14 +15,15 @@ public class EdgeDetect extends Thread {
 	public static final byte EDGE_BOTTOM = 4;
 
 	public EdgeDetect() {
-		maxPos = new Point(Client.screenRes.width - 1, Client.screenRes.height - 1); // position
-																			// is
-																			// 0
-																			// based,
-																			// size
-																			// is
-																			// 1
-																			// based
+		maxPos = new Point(Client.screenRes.width - 1,
+				Client.screenRes.height - 1); // position
+		// is
+		// 0
+		// based,
+		// size
+		// is
+		// 1
+		// based
 	}
 
 	@Override

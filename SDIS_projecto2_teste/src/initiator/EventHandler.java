@@ -21,7 +21,7 @@ public class EventHandler extends Thread {
 	}
 
 	void addEvent(InputEvent event) {
-		if(!discardEvents)
+		if (!discardEvents)
 			eventQueue.offer(event); // não espera para inserir
 	}
 
@@ -38,7 +38,8 @@ public class EventHandler extends Thread {
 					break;
 				case KeyEvent.KEY_PRESSED:
 				case KeyEvent.KEY_RELEASED:
-					if(((KeyEvent)event).getKeyCode()==0) //TODO: keycodes de Ç etc.
+					if (((KeyEvent) event).getKeyCode() == 0) // TODO: keycodes
+																// de Ç etc.
 						break;
 				default:
 					Initiator.messageSender.addMessage(new Message(event));
@@ -54,7 +55,8 @@ public class EventHandler extends Thread {
 				|| event.getY() != Initiator.relativeCenterY) { // discard
 			deltaX += (event.getX() - Initiator.relativeCenterX);
 			deltaY += (event.getY() - Initiator.relativeCenterY);
-			if (!mouseUpdated) { //se rato ainda não tinha sido movido, adiciona mensagem indicativa
+			if (!mouseUpdated) { // se rato ainda não tinha sido movido,
+									// adiciona mensagem indicativa
 				Initiator.messageSender.addMessage(new Message());
 				mouseUpdated = true;
 			}
@@ -75,7 +77,7 @@ public class EventHandler extends Thread {
 		this.go = false;
 		super.interrupt();
 	}
-	
+
 	public void discardEvents(boolean discard) {
 		eventQueue.clear();
 		this.discardEvents = discard;

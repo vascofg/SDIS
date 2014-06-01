@@ -22,13 +22,13 @@ import java.util.concurrent.Executors;
 
 import javax.imageio.ImageIO;
 
-public class FileHandler extends Thread {
+public class ClipboardHandler extends Thread {
 	private boolean go = true;
 	private ServerSocket socket;
 
 	private static final Executor exec = Executors.newCachedThreadPool();
 
-	public FileHandler(int port) {
+	public ClipboardHandler(int port) {
 		try {
 			this.socket = new ServerSocket(port);
 		} catch (IOException e) {
@@ -67,18 +67,18 @@ public class FileHandler extends Thread {
 			BufferedOutputStream bos = new BufferedOutputStream(
 					socket.getOutputStream());
 			DataOutputStream dos = new DataOutputStream(bos);
-			switch (ClipboardListener.getContentType(contents)) {
-			case ClipboardListener.TEXT:
+			switch (ClipboardFlavorChangeListener.getContentType(contents)) {
+			case ClipboardFlavorChangeListener.TEXT:
 				String contentString = (String) contents
 						.getTransferData(DataFlavor.stringFlavor);
 				dos.writeUTF(contentString);
 				break;
-			case ClipboardListener.IMAGE:
+			case ClipboardFlavorChangeListener.IMAGE:
 				BufferedImage img = (BufferedImage) contents
 						.getTransferData(DataFlavor.imageFlavor);
 				ImageIO.write(img, "png", bos);
 				break;
-			case ClipboardListener.FILES:
+			case ClipboardFlavorChangeListener.FILES:
 				List<File> files = (List<File>) contents
 						.getTransferData(DataFlavor.javaFileListFlavor);
 				sendFiles(files, files.get(0).getParentFile(), bos, dos);

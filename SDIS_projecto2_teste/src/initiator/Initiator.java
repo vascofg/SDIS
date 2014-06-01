@@ -16,17 +16,20 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import message.Message;
 import monitor.Monitor;
+import clipboard.ClipboardFlavorChangeListener;
+import clipboard.ClipboardHandler;
 import clipboard.ClipboardListener;
-import clipboard.FileHandler;
-import clipboard.FileListener;
 
 public class Initiator {
 
@@ -56,9 +59,9 @@ public class Initiator {
 
 	static Control control;
 
-	static FileHandler fileHandler;
+	static ClipboardHandler fileHandler;
 
-	static FileListener fileListener;
+	static ClipboardListener fileListener;
 
 	static final int port = 44444;
 	static final int clipboardPort = 44445;
@@ -129,21 +132,36 @@ public class Initiator {
 		statusGUI.getClipboard.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				fileListener.requestFile();
+				new Thread() {
+					@Override
+					public void run() {
+						try {
+							fileListener.requestClipboard();
+						} catch (ConnectException e) {
+							JOptionPane.showMessageDialog(null,
+									"File transfer failed", "Timeout",
+									JOptionPane.ERROR_MESSAGE);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}.start();
 			}
 		});
 
-		fileHandler = new FileHandler(clipboardPort);
+		fileHandler = new ClipboardHandler(clipboardPort);
 		fileHandler.start();
 
-		fileListener = new FileListener(clipboardPort);
+		fileListener = new ClipboardListener(clipboardPort);
 		fileListener.start();
 
 		messageSender.start();
 		messageListener.start();
 
-		Toolkit.getDefaultToolkit().getSystemClipboard()
-				.addFlavorListener(new ClipboardListener(messageSender));
+		Toolkit.getDefaultToolkit()
+				.getSystemClipboard()
+				.addFlavorListener(
+						new ClipboardFlavorChangeListener(messageSender));
 	}
 
 	public static void monitorsReady() {
@@ -171,9 +189,12 @@ public class Initiator {
 		if (tmp != null) {
 			previousMonitor = currentMonitor; // save previous
 			currentMonitor = tmp;
-			if (previousMonitor != MainGUI.initiatorMonitor)
+			if (previousMonitor == MainGUI.initiatorMonitor)
+				enableWindow();
+			else
 				messageSender.sendMessage(
-						new Message(Message.LEAVE).getBytes(), previousMonitor.getIp());
+						new Message(Message.LEAVE).getBytes(),
+						previousMonitor.getIp());
 			if (currentMonitor == MainGUI.initiatorMonitor) {
 				control.pause();
 				edgeThread.unpause();
@@ -198,7 +219,8 @@ public class Initiator {
 				}
 			} else {
 				edgeThread.pause();
-				eventHandler.discardEvents(true); //discard events until connected
+				eventHandler.discardEvents(true); // discard events until
+													// connected
 				control.newConnection(edge, percentage);
 			}
 		}
@@ -227,20 +249,16 @@ public class Initiator {
 	public static void connected(byte edge, int percentage) {
 		Initiator.messageSender.addMessage(Message.edge(edge, percentage));
 		eventHandler.discardEvents(false);
-		enableWindow();
 	}
 
 	public static void timeout() {
-		// TODO: voltar para monitor anterior: pode não ter adjacencias
-		// válidas...
 		System.out.println("TIMEOUT");
-		// currentMonitor = previousMonitor;
-		// if (currentMonitor == Gui.initiatorMonitor) {
 		currentMonitor = MainGUI.initiatorMonitor;
 		control.pause();
 		edgeThread.unpause();
 		disableWindow();
-		// }
+		JOptionPane.showMessageDialog(null, "Connection timed out", "Timeout",
+				JOptionPane.ERROR_MESSAGE);
 	}
 
 	public static void exit() {

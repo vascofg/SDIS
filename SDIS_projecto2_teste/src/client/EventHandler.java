@@ -84,13 +84,14 @@ public class EventHandler extends Thread {
 					Client.r.keyRelease(argument);
 					break;
 				case Message.ALIVE:
-					//initial check for connectivity
+					// initial check for connectivity
 					if (Client.initiatorAddress == null)
 						Client.messageSender.sendMessage(new Message(
 								Message.ALIVE).getBytes(), msg
 								.getRemoteAddress());
 					else
-						Client.messageSender.addMessage(new Message(Message.ALIVE));
+						Client.messageSender.addMessage(new Message(
+								Message.ALIVE));
 					break;
 				case Message.LEAVE:
 					Client.leaveScreen();

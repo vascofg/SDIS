@@ -12,13 +12,15 @@ public class EventListener {
 		// MOUSE LISTENER
 		@Override
 		public void mouseReleased(MouseEvent arg0) {
-			//System.out.println("Release mouse " + arg0.getButton() + " " + arg0.getClickCount() + " times");
+			// System.out.println("Release mouse " + arg0.getButton() + " " +
+			// arg0.getClickCount() + " times");
 			Initiator.eventHandler.addEvent(arg0);
 		}
 
 		@Override
 		public void mousePressed(MouseEvent arg0) {
-			//System.out.println("Press mouse " + arg0.getButton() + " " + arg0.getClickCount() + " times");
+			// System.out.println("Press mouse " + arg0.getButton() + " " +
+			// arg0.getClickCount() + " times");
 			Initiator.eventHandler.addEvent(arg0);
 		}
 
@@ -26,7 +28,8 @@ public class EventListener {
 		// WHEEL LISTENER
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent arg0) {
-			//System.out.println("ROTATE: " + arg0.getWheelRotation() + " notches");
+			// System.out.println("ROTATE: " + arg0.getWheelRotation() +
+			// " notches");
 			Initiator.eventHandler.addEvent(arg0);
 		}
 
@@ -34,13 +37,15 @@ public class EventListener {
 		// MOTION LISTENER
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			Initiator.r.mouseMove(Initiator.absoluteCenterX, Initiator.absoluteCenterY);
+			Initiator.r.mouseMove(Initiator.absoluteCenterX,
+					Initiator.absoluteCenterY);
 			Initiator.eventHandler.addEvent(e);
 		}
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			Initiator.r.mouseMove(Initiator.absoluteCenterX, Initiator.absoluteCenterY);
+			Initiator.r.mouseMove(Initiator.absoluteCenterX,
+					Initiator.absoluteCenterY);
 			Initiator.eventHandler.addEvent(e);
 		}
 	};
@@ -50,13 +55,15 @@ public class EventListener {
 
 		@Override
 		public void keyReleased(KeyEvent arg0) {
-			//System.out.println("Released " + KeyEvent.getKeyText(arg0.getKeyCode()));
+			// System.out.println("Released " +
+			// KeyEvent.getKeyText(arg0.getKeyCode()));
 			Initiator.eventHandler.addEvent(arg0);
 		}
 
 		@Override
 		public void keyPressed(KeyEvent arg0) {
-			//System.out.println("Pressed " + KeyEvent.getKeyText(arg0.getKeyCode()));
+			// System.out.println("Pressed " +
+			// KeyEvent.getKeyText(arg0.getKeyCode()));
 			Initiator.eventHandler.addEvent(arg0);
 		}
 	};

@@ -11,15 +11,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import javax.swing.JOptionPane;
+
 import message.Message;
+import clipboard.ClipboardFlavorChangeListener;
+import clipboard.ClipboardHandler;
 import clipboard.ClipboardListener;
-import clipboard.FileHandler;
-import clipboard.FileListener;
 
 public class Client {
 	static DatagramSocket socket;
@@ -37,8 +41,8 @@ public class Client {
 	static EventHandler eventHandler;
 	static MessageListener messageListener;
 	static MessageSender messageSender;
-	static FileListener fileListener;
-	static FileHandler fileHandler;
+	static ClipboardListener fileListener;
+	static ClipboardHandler fileHandler;
 
 	static short messageDelay = 25; // delay to send messages (in milliseconds)
 
@@ -78,18 +82,33 @@ public class Client {
 			statusGUI.getClipboard.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					fileListener.requestFile();
+					new Thread() {
+						@Override
+						public void run() {
+							try {
+								fileListener.requestClipboard();
+							} catch (ConnectException e) {
+								JOptionPane.showMessageDialog(null,
+										"File transfer failed", "Timeout",
+										JOptionPane.ERROR_MESSAGE);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}.start();
 				}
 			});
 
-			fileHandler = new FileHandler(clipboardPort);
+			fileHandler = new ClipboardHandler(clipboardPort);
 			fileHandler.start();
 
-			fileListener = new FileListener(clipboardPort);
+			fileListener = new ClipboardListener(clipboardPort);
 			fileListener.start();
 
-			Toolkit.getDefaultToolkit().getSystemClipboard()
-					.addFlavorListener(new ClipboardListener(messageSender));
+			Toolkit.getDefaultToolkit()
+					.getSystemClipboard()
+					.addFlavorListener(
+							new ClipboardFlavorChangeListener(messageSender));
 
 			statusGUI.setActivity(false);
 			statusGUI.setVisible(true);

@@ -51,7 +51,7 @@ public class Message {
 															// mensagem por tipo
 		switch (msgType) {
 		case CLIPBOARD_ANNOUNCE:
-			return 6; //type + content type + ip address (4 bytes)
+			return 6; // type + content type + ip address (4 bytes)
 		case MOUSE_MOVE:
 		case RESOLUTION:
 			return 5;
@@ -137,7 +137,7 @@ public class Message {
 	public static Message announceClipboard(byte contentType, InetAddress addr) {
 		Message msg = new Message(Message.CLIPBOARD_ANNOUNCE);
 		msg.bytes.add(contentType);
-		for(byte addrByte : addr.getAddress())
+		for (byte addrByte : addr.getAddress())
 			msg.bytes.add(addrByte);
 		return msg;
 	}
@@ -245,7 +245,7 @@ public class Message {
 		int keyCode = byteArrayToUnsignedInt(bytes);
 		return keyCode;
 	}
-	
+
 	public int getPercentage() {
 		byte[] bytes = new byte[1];
 		Iterator<Byte> t = this.bytes.listIterator(2);
@@ -266,7 +266,7 @@ public class Message {
 		dim.height = byteArrayToSignedInt(bytes);
 		return dim;
 	}
-	
+
 	public InetAddress getAddress() throws UnknownHostException {
 		byte[] bytes = new byte[4];
 		Iterator<Byte> t = this.bytes.listIterator(2);
@@ -284,7 +284,7 @@ public class Message {
 		byte edge = (byte) byteArrayToSignedInt(bytes);
 		return edge;
 	}
-	
+
 	public byte getContentType() {
 		byte[] bytes = new byte[1];
 		Iterator<Byte> t = this.bytes.listIterator(1);

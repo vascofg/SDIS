@@ -26,7 +26,7 @@ public class BoxListener implements MouseListener {
 		JPanel btnPanel = (JPanel) arg0.getSource();
 		System.out.println(btnPanel.getName());
 
-		if(MainGUI.list.getSelectedValue() != null) {
+		if (MainGUI.list.getSelectedValue() != null) {
 			String ip = MainGUI.list.getSelectedValue().getIp();
 			System.out.println("IP: " + ip);
 
@@ -39,9 +39,10 @@ public class BoxListener implements MouseListener {
 						// possible
 				if (!MainGUI.list.getSelectedValue().isPlaced()) {
 					boolean temp = checkSurrounds(btnPanel.getName());
-					if(temp) {
+					if (temp) {
 						clied = true;
-						MainGUI.list.getSelectedValue().Place(btnPanel.getName());
+						MainGUI.list.getSelectedValue().Place(
+								btnPanel.getName());
 					}
 				}
 			}
@@ -91,7 +92,8 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(),
+						"5000");
 				inst = true;
 			}
 
@@ -107,7 +109,8 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(),
+						"5000");
 				inst = true;
 			}
 
@@ -123,7 +126,8 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(),
+						"5000");
 				inst = true;
 			}
 
@@ -139,7 +143,8 @@ public class BoxListener implements MouseListener {
 
 			// create monitor
 			if (!inst) {
-				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(), "5000");
+				mon = instamon(id, MainGUI.list.getSelectedValue().getIp(),
+						"5000");
 				inst = true;
 			}
 
@@ -158,7 +163,7 @@ public class BoxListener implements MouseListener {
 		try {
 			Monitor temp = MainGUI.ls.get(id);
 			System.out.println(ip);
-			//ip = JOptionPane.showInputDialog("Input IP address:");
+			// ip = JOptionPane.showInputDialog("Input IP address:");
 			temp.setIp(InetAddress.getByName(ip));
 			temp.setPort(Integer.parseInt(port));
 			return temp;

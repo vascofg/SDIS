@@ -1,54 +1,146 @@
 package clipboard;
 
-import interfaces.SendClipboardMessage;
+import gui.FileTransferProgress;
 
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.FlavorEvent;
-import java.awt.datatransfer.FlavorListener;
-import java.awt.datatransfer.Transferable;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 
-import message.Message;
+import javax.activation.DataHandler;
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
 
-public class ClipboardListener implements FlavorListener {
-	
-	static final byte IMAGE = 0;
-	static final byte FILES = 1;
-	static final byte TEXT = 2;
-	
-	public static final String[] typeText = {"Image", "Files", "Text"};
+public class ClipboardListener extends Thread {
+	private boolean go = true;
+	public InetAddress hostAddress;
+	private int hostPort;
+	public byte availableContentType;
+	private Socket socket = null;
 
-	// save add message to queue interface
-	private SendClipboardMessage messageSender;
-
-	public ClipboardListener(SendClipboardMessage messageSender) {
-		this.messageSender = messageSender;
+	public ClipboardListener(int port) {
+		this.hostPort = port;
 	}
 
 	@Override
-	public void flavorsChanged(FlavorEvent arg0) {
+	public void run() {
 		try {
-			Clipboard clipboard = (Clipboard) arg0.getSource();
-			Transferable contents = clipboard.getContents(null);
-			Byte type = getContentType(contents);
-			if(type!=null)
-				messageSender.sendClipboardMessage(Message.haveClipboard(type));
-		} catch (IllegalStateException e) {
-			System.out.println("Couldn't get clipboard contents");
+			while (go) {
+				synchronized (this) {
+					while (socket == null || socket.isClosed())
+						wait();
+				}
+				Clipboard clipboard = Toolkit.getDefaultToolkit()
+						.getSystemClipboard();
+				BufferedInputStream bis = new BufferedInputStream(
+						socket.getInputStream());
+				DataInputStream dis = new DataInputStream(bis);
+				switch (availableContentType) {
+				case ClipboardFlavorChangeListener.TEXT:
+					String str = dis.readUTF();
+					clipboard.setContents(new DataHandler(str,
+							DataFlavor.stringFlavor.getMimeType()), null);
+					break;
+				case ClipboardFlavorChangeListener.IMAGE:
+					BufferedImage img = ImageIO.read(bis);
+					clipboard.setContents(new ImageTransferable(img), null);
+					break;
+				case ClipboardFlavorChangeListener.FILES:
+					receiveClipboard(dis, bis);
+					break;
+				}
+				dis.close();
+				socket.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 		}
+	}
 
+	private void receiveClipboard(DataInputStream dis, BufferedInputStream bis)
+			throws IOException {
+		FileTransferProgress progressMonitor = new FileTransferProgress();
+		final JFileChooser fc = new JFileChooser();
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int returnVal = fc.showSaveDialog(progressMonitor);
+		File saveFolder;
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			saveFolder = fc.getSelectedFile();
+		} else {
+			System.out.println("Operation cancelled");
+			return;
+		}
+		try {
+			while (true) {
+				String filePath = dis.readUTF();
+				filePath = saveFolder.getAbsolutePath() + '/' + filePath; // prepend
+																			// selected
+																			// folder
+																			// path
+				File file = new File(filePath);
+
+				file.getAbsoluteFile().getParentFile().mkdirs();
+				long fileLength = dis.readLong();
+				int fileLengthMB = (int) (fileLength / 1024 / 1024);
+				progressMonitor.progressBar.setMaximum(fileLengthMB);
+				progressMonitor.progressBar.setValue(0);
+				boolean flagCanceled = false;
+
+				FileOutputStream fos = new FileOutputStream(file);
+				BufferedOutputStream bos = new BufferedOutputStream(fos);
+
+				for (long i = 0; i < fileLength; i++) {
+					if (progressMonitor.isCanceled()) {
+						flagCanceled = true;
+						break;
+					}
+					bos.write(bis.read());
+					if ((i / 1024) % 1024 == 0) { // one MB
+													// elapsed,
+													// update
+													// progress
+													// monitor
+						int progressMB = ((int) i / 1024 / 1024);
+						progressMonitor.progressBar.setValue(progressMB);
+						progressMonitor.progressBar.setString(progressMB
+								+ "MB / " + fileLengthMB + "MB");
+					}
+				}
+				bos.close();
+				if (flagCanceled) {
+					file.delete();
+					break;
+				} else
+					progressMonitor.output.insert(
+							"Transfered " + file.getName() + "\n", 0);
+			}
+		} catch (EOFException e) { // end of stream, do nothing
+		}
+		progressMonitor.close();
 	}
-	
-	public static Byte getContentType(Transferable contents)
-	{
-		Byte type = null;
-		if (contents.isDataFlavorSupported(DataFlavor.imageFlavor))
-			type=IMAGE;
-		else if (contents
-				.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
-			type=FILES;
-		else if (contents.isDataFlavorSupported(DataFlavor.stringFlavor))
-			type=TEXT;
-		return type;
+
+	@Override
+	public synchronized void interrupt() {
+		this.go = false;
+		super.interrupt();
 	}
+
+	public synchronized void requestClipboard() throws IOException {
+		if (socket == null || socket.isClosed()) {
+			socket = new Socket(hostAddress, hostPort);
+			notify();
+		}
+	}
+
 }

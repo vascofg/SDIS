@@ -170,7 +170,7 @@ public class MainGUI {
 		frame.getContentPane().add(panelS);
 		frame.getContentPane().add(panelC);
 		frame.setLocationRelativeTo(null);
-		JButton serv = new JButton("Servidor");
+		JButton serv = new JButton("Server");
 		JButton cli = new JButton("Client");
 		frame.setResizable(false);
 		cli.setPreferredSize(serv.getPreferredSize());

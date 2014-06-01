@@ -14,7 +14,6 @@ import message.Message;
 public class MessageSender extends Thread implements SendClipboardMessage {
 	private boolean go = true;
 	private LinkedBlockingQueue<Message> messageQueue;
-	
 
 	public MessageSender() {
 		messageQueue = new LinkedBlockingQueue<>();

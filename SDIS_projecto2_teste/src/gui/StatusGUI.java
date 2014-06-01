@@ -19,7 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import clipboard.ClipboardListener;
+import clipboard.ClipboardFlavorChangeListener;
 
 public class StatusGUI extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -43,11 +43,8 @@ public class StatusGUI extends JFrame {
 		c.gridy = 0;
 		activityLabel = new JLabel();
 		activityLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		activityLabel.setAlignmentY(CENTER_ALIGNMENT);
-		activityLabel.setOpaque(true);
 		activityPanel = new JPanel(new BorderLayout());
 		activityPanel.setPreferredSize(new Dimension(150, 50));
-		activityLabel.setBackground(Color.red);
 		JLabel close = new JLabel("X ", SwingConstants.RIGHT);
 		close.addMouseListener(new MouseAdapter() {
 			@Override
@@ -95,11 +92,11 @@ public class StatusGUI extends JFrame {
 		this.activityLabel.setText(activity ? "ACTIVE" : "INACTIVE");
 		Color bg = activity ? Color.GREEN : Color.RED;
 		this.activityPanel.setBackground(bg);
-		this.activityLabel.setBackground(bg);
 	}
 
 	public void setClipboardContent(byte contentType, InetAddress addr) {
-		this.getClipboard.setText(ClipboardListener.typeText[contentType] + "@"
-				+ addr.getHostAddress());
+		this.getClipboard
+				.setText(ClipboardFlavorChangeListener.typeText[contentType]
+						+ "@" + addr.getHostAddress());
 	}
 }
