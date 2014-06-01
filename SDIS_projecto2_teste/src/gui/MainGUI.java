@@ -46,7 +46,7 @@ public class MainGUI {
 	public static Monitor initiatorMonitor;
 	public static ArrayList<Monitor> ls = new ArrayList<Monitor>();
 	static int tamanho = 5;
-	static int vel = 25;
+	static short vel = 25;
 	static ArrayList<JPanel> panels = new ArrayList<JPanel>();
 	static HttpConnection hC = new HttpConnection();
 	public static ArrayList<User> users = new ArrayList<User>();
@@ -69,12 +69,12 @@ public class MainGUI {
 				}
 			} else if (e.getActionCommand().equals("cli")) {
 				try {
+					Client.init();
 					hC.init();
 					hC.setCode(JOptionPane.showInputDialog(frame,
 							"Insert Room code", "Enter room"));
 					frame.setVisible(false);
 					frame.dispose();
-					Client.init();
 					hC.rsp(2);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -94,17 +94,16 @@ public class MainGUI {
 				}
 			} else if (e.getActionCommand().equals("con")) {
 				if (getNumMonitors() > 0) {
-					Initiator.monitorsReady();
+					Initiator.monitorsReady(vel);
 					frame.setVisible(false);
 					frame.dispose();
 				}
 			} else if (e.getActionCommand().equals("opt")) {
 				frame.setVisible(false);
-				frame.dispose();
 				createopt();
-				initServ();
+				frame.setVisible(true);
 
-			} else if (e.getActionCommand().equals("test")) {
+			} else if (e.getActionCommand().equals("gethosts")) {
 
 				try {
 					getIps(hC.rsp(3));
@@ -161,7 +160,7 @@ public class MainGUI {
 	}
 
 	public static void init() {
-		frame = new JFrame("init");
+		frame = new JFrame();
 		panelS = new JPanel();
 		panelC = new JPanel();
 
@@ -270,7 +269,7 @@ public class MainGUI {
 		ex.setActionCommand("exit");
 		con.setActionCommand("con");
 		opt.setActionCommand("opt");
-		ts.setActionCommand("test");
+		ts.setActionCommand("gethosts");
 
 		frame.pack();
 		frame.setVisible(true);
@@ -280,36 +279,37 @@ public class MainGUI {
 	private static void createopt() {
 		String speeds[] = { "High", "Medium", "Slow" };
 		JComboBox<String> speed = new JComboBox<String>(speeds);
-		String widths[] = { "3x3", "5x5", "7x7" };
-		JComboBox<String> width = new JComboBox<String>(widths);
+		switch (vel) {
+		case 10:
+			speed.setSelectedIndex(0);
+			break;
+		case 25:
+			speed.setSelectedIndex(1);
+			break;
+		case 50:
+			speed.setSelectedIndex(2);
+			break;
+		}
 
 		JPanel myPanel = new JPanel();
 		myPanel.add(new JLabel("Refresh Rate:"));
 		myPanel.add(speed);
 		myPanel.add(Box.createHorizontalStrut(15)); // a spacer
-		myPanel.add(new JLabel("Grid Size:"));
-		myPanel.add(width);
 
-		int result = JOptionPane.showConfirmDialog(null, myPanel,
-				"Please enter refresh rate and grid width values",
+		int result = JOptionPane.showConfirmDialog(null, myPanel, "Options",
 				JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
-			if (speed.getSelectedItem().toString().equals("High")) {
+			switch (speed.getSelectedIndex()) {
+			case 0:
 				vel = 10;
-			} else if (speed.getSelectedItem().toString().equals("Medium")) {
+				break;
+			case 1:
 				vel = 25;
-			} else if (speed.getSelectedItem().toString().equals("Low")) {
+				break;
+			case 2:
 				vel = 50;
+				break;
 			}
-
-			if (width.getSelectedItem().toString().equals("3x3")) {
-				tamanho = 3;
-			} else if (width.getSelectedItem().toString().equals("5x5")) {
-				tamanho = 5;
-			} else if (width.getSelectedItem().toString().equals("7x7")) {
-				tamanho = 7;
-			}
-
 		}
 
 	}

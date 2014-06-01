@@ -26,7 +26,6 @@ public class MessageSender extends Thread implements SendClipboardMessage {
 		DatagramPacket packet;
 		while (go) {
 			try {
-				Thread.sleep(Client.messageDelay);
 				messageList.add(messageQueue.take()); // espera até ter algum
 														// elemento
 				messageQueue.drainTo(messageList); // retira os restantes

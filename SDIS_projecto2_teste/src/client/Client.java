@@ -44,8 +44,6 @@ public class Client {
 	static ClipboardListener fileListener;
 	static ClipboardHandler fileHandler;
 
-	static short messageDelay = 25; // delay to send messages (in milliseconds)
-
 	static Dimension screenRes;
 
 	public static void init() {
@@ -111,7 +109,6 @@ public class Client {
 							new ClipboardFlavorChangeListener(messageSender));
 
 			statusGUI.setActivity(false);
-			statusGUI.setVisible(true);
 		} catch (SocketException | AWTException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -121,14 +118,18 @@ public class Client {
 	public static void exit() {
 		try {
 			statusGUI.dispose();
-			eventHandler.interrupt();
-			edgeDetect.interrupt();
-			messageListener.interrupt();
-			messageSender.interrupt();
-			fileHandler.interrupt();
-			fileListener.interrupt();
 		} catch (NullPointerException e) {
 		}
+		eventHandler.interrupt();
+		edgeDetect.interrupt();
+		messageListener.interrupt();
+		messageSender.interrupt();
+		fileHandler.interrupt();
+		fileListener.interrupt();
+	}
+
+	public static void showStatusGUI() {
+		statusGUI.setVisible(true);
 	}
 
 	public static void leaveScreen() {

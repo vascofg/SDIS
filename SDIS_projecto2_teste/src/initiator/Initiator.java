@@ -68,7 +68,7 @@ public class Initiator {
 
 	static Dimension screenRes;
 
-	static short messageDelay = 25; // delay to send messages (in milliseconds)
+	static short messageDelay; // delay to send messages (in milliseconds)
 
 	public static void init() throws AWTException {
 		screenRes = Toolkit.getDefaultToolkit().getScreenSize();
@@ -164,8 +164,9 @@ public class Initiator {
 						new ClipboardFlavorChangeListener(messageSender));
 	}
 
-	public static void monitorsReady() {
+	public static void monitorsReady(short vel) {
 		currentMonitor = MainGUI.initiatorMonitor;
+		messageDelay = vel;
 		edgeThread.start();
 		statusGUI.setVisible(true);
 	}

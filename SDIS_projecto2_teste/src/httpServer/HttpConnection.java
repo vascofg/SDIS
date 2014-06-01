@@ -13,6 +13,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
+import javax.swing.JOptionPane;
+
 import client.Client;
 
 public class HttpConnection {
@@ -55,8 +57,12 @@ public class HttpConnection {
 			System.out.println(st);
 			st = http.sendPost("action=" + code + "&name=" + pcName + "&ip="
 					+ st + "~");
-			if (st.equals("HASH errada"))
+			if (st.equals("HASH errada")) {
+				JOptionPane.showMessageDialog(null, "Invalid room code",
+						"Invalid code", JOptionPane.ERROR_MESSAGE);
 				Client.exit();
+			} else
+				Client.showStatusGUI();
 			System.out.println(st);
 		} else if (nr == 3) {
 			String smth = http.sendPost("action=" + 69 + "&file=" + code);
@@ -66,7 +72,7 @@ public class HttpConnection {
 			String smth = http.sendGet("action=" + 99 + "&file=" + code);
 			System.out.println(smth);
 		} else {
-			System.out.println("error soz");
+			System.out.println("error");
 			return "";
 		}
 

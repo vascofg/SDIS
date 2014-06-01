@@ -1,7 +1,6 @@
 package monitor;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class Monitor {
 	int id;
@@ -15,16 +14,6 @@ public class Monitor {
 
 	public Monitor(int id) {
 		this.id = id;
-	}
-
-	public void init() {
-		try {
-			ip = InetAddress.getByName("127.0.0.1");
-			port = 1234;
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public int getId() {
@@ -78,13 +67,4 @@ public class Monitor {
 	public void setRight(Monitor right) {
 		this.right = right;
 	}
-
-	/*
-	 * public void configure(String cenas){ //dependente da string mudar pc
-	 * decente //realconf(String ip, String port); }
-	 * 
-	 * public void realconf(String ip, String port){
-	 * 
-	 * }
-	 */
 }

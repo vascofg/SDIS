@@ -162,8 +162,6 @@ public class BoxListener implements MouseListener {
 	private Monitor instamon(int id, String ip, String port) {
 		try {
 			Monitor temp = MainGUI.ls.get(id);
-			System.out.println(ip);
-			// ip = JOptionPane.showInputDialog("Input IP address:");
 			temp.setIp(InetAddress.getByName(ip));
 			temp.setPort(Integer.parseInt(port));
 			return temp;
