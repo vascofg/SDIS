@@ -198,6 +198,7 @@ public class Initiator {
 				}
 			} else {
 				edgeThread.pause();
+				eventHandler.discardEvents(true); //discard events until connected
 				control.newConnection(edge, percentage);
 			}
 		}
@@ -225,6 +226,7 @@ public class Initiator {
 
 	public static void connected(byte edge, int percentage) {
 		Initiator.messageSender.addMessage(Message.edge(edge, percentage));
+		eventHandler.discardEvents(false);
 		enableWindow();
 	}
 

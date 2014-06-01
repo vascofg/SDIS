@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import message.Message;
 
 public class EventHandler extends Thread {
-	private boolean go = true;
+	private boolean go = true, discardEvents = false;
 	private LinkedBlockingQueue<InputEvent> eventQueue;
 	private int deltaX, deltaY;
 	private boolean mouseUpdated;
@@ -21,7 +21,8 @@ public class EventHandler extends Thread {
 	}
 
 	void addEvent(InputEvent event) {
-		eventQueue.offer(event); // não espera para inserir
+		if(!discardEvents)
+			eventQueue.offer(event); // não espera para inserir
 	}
 
 	@Override
@@ -73,5 +74,10 @@ public class EventHandler extends Thread {
 	public void interrupt() {
 		this.go = false;
 		super.interrupt();
+	}
+	
+	public void discardEvents(boolean discard) {
+		eventQueue.clear();
+		this.discardEvents = discard;
 	}
 }
