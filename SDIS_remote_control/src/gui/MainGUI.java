@@ -45,7 +45,7 @@ public class MainGUI {
 	static JList<User> list = new JList<User>(model);
 	public static Monitor initiatorMonitor;
 	public static ArrayList<Monitor> ls = new ArrayList<Monitor>();
-	static int tamanho = 5;
+	static int tamanho = 7;
 	static short vel = 25;
 	static ArrayList<JPanel> panels = new ArrayList<JPanel>();
 	static HttpConnection hC = new HttpConnection();
@@ -71,8 +71,9 @@ public class MainGUI {
 				try {
 					Client.init();
 					hC.init();
-					hC.setCode(JOptionPane.showInputDialog(frame,
-							"Insert Room code", "Enter room"));
+					hC.setCode((String) JOptionPane.showInputDialog(null,
+							"Insert Room code", "Connect",
+							JOptionPane.DEFAULT_OPTION, null, null, null));
 					frame.setVisible(false);
 					frame.dispose();
 					hC.rsp(2);
@@ -169,7 +170,7 @@ public class MainGUI {
 		frame.getContentPane().add(panelS);
 		frame.getContentPane().add(panelC);
 		frame.setLocationRelativeTo(null);
-		JButton serv = new JButton("Server");
+		JButton serv = new JButton("Initiator");
 		JButton cli = new JButton("Client");
 		frame.setResizable(false);
 		cli.setPreferredSize(serv.getPreferredSize());
@@ -192,7 +193,7 @@ public class MainGUI {
 
 	private static void initServ() {
 
-		frame = new JFrame("Servidor");
+		frame = new JFrame("Initiator");
 		frame.setResizable(false);
 		panelS = new JPanel();
 		panelC = new JPanel();

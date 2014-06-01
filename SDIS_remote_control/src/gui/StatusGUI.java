@@ -44,7 +44,7 @@ public class StatusGUI extends JFrame {
 		activityLabel = new JLabel();
 		activityLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		activityPanel = new JPanel(new BorderLayout());
-		activityPanel.setPreferredSize(new Dimension(150, 50));
+		activityPanel.setPreferredSize(new Dimension(165, 50));
 		JLabel close = new JLabel("X ", SwingConstants.RIGHT);
 		close.addMouseListener(new MouseAdapter() {
 			@Override
