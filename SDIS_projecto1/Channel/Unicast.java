@@ -21,7 +21,8 @@ public class Unicast extends Thread {
 		this.address = unicast_address;
 	}
 
-	public Unicast(String port) {
+	public Unicast(String name, String port) {
+		super(name);
 		try {
 			this.port = Integer.parseInt(port);
 

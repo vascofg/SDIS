@@ -19,7 +19,8 @@ public class Multicast extends Thread {
 	public Integer ignoreChunkNo;
 	public Boolean ignoreChunk;
 
-	public Multicast(String group, String multicast_port) {
+	public Multicast(String name, String group, String multicast_port) {
+		super(name);
 		try {
 			this.multicast_port = Integer.parseInt(multicast_port);
 			this.group = InetAddress.getByName(group);

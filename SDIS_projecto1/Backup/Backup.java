@@ -194,12 +194,12 @@ public final class Backup {
 			System.out.println("No config files to load");
 		}
 
-		MC = new Multicast(MCgroup, MCport);
-		MDB = new Multicast(MDBgroup, MDBport);
-		MDR = new Multicast(MDRgroup, MDRport);
+		MC = new Multicast("MC", MCgroup, MCport);
+		MDB = new Multicast("MDB", MDBgroup, MDBport);
+		MDR = new Multicast("MDR", MDRgroup, MDRport);
 
 		// open unicast socket for restore enhancement
-		MDR_unicast = new Unicast(MDR_unicast_port);
+		MDR_unicast = new Unicast("Unicast", MDR_unicast_port);
 
 		MC.start();
 		MDB.start();
@@ -207,6 +207,8 @@ public final class Backup {
 		MDR_unicast.start();
 
 		resendDelete();
+
+		File file;
 
 		while (true) {
 			System.out.println("Choose one option\n");
@@ -226,19 +228,19 @@ public final class Backup {
 						.println("Write the file name and replication number <Filename> <RepNumber>");
 				cmd = sc.nextLine();
 				data = cmd.split(" ");
-
-				File file = new File(data[0], Integer.parseInt(data[1]));
-				if (getFileByID(file.getFileID()) == null) {
-					file.chunker();
-					if (usedSpace > maxSpace)
-						System.out
-								.println("Max space reached! Allocate more space!");
-					files.add(file);
-					addFileChunksToChunkArray(file);
-					sendBackup(file);
-
-				} else
-					System.out.println("File already in the system!");
+				if (data.length==2) {
+					file = new File(data[0], Integer.parseInt(data[1]));
+					if (getFileByID(file.getFileID()) == null) {
+						file.chunker();
+						if (usedSpace > maxSpace)
+							System.out
+									.println("Max space reached! Allocate more space!");
+						files.add(file);
+						addFileChunksToChunkArray(file);
+						sendBackup(file);
+					} else
+						System.out.println("File already in the system!");
+				}
 				break;
 			case "2":
 				System.out.println("Choose which file to restore");
@@ -589,12 +591,11 @@ public final class Backup {
 						MDR.ignoreChunk = null;
 						MDR.ignoreChunkNo = null;
 						MDR.ignoreFileID = null;
-					} else
-					{
+					} else {
 						System.out.println("Sent by unicast successfuly");
 						message = new Message(header, null);
 						MDR.send(message);
-						//mandar chunk vazio (para os outros não enviarem)
+						// mandar chunk vazio (para os outros não enviarem)
 					}
 				}
 
